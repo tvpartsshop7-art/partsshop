@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Order, Currency } from '../types';
+import { User, Order, Currency, Product } from '../types';
 import {
   X,
   User as UserIcon,
@@ -20,7 +20,8 @@ import {
   Wrench,
   Sparkles,
   Award,
-  Clock
+  Clock,
+  Eye
 } from 'lucide-react';
 
 interface UserProfileModalProps {
@@ -29,8 +30,8 @@ interface UserProfileModalProps {
   user: User | null;
   orders: Order[];
   currency: Currency;
-  onOpenMyDownloads: () => void;
   onLogout: () => void;
+  onOpenOnlineReader?: (product: Product) => void;
   onUpdateUser?: (updatedUser: User) => void;
 }
 
@@ -48,8 +49,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   user,
   orders,
   currency,
-  onOpenMyDownloads,
   onLogout,
+  onOpenOnlineReader,
   onUpdateUser
 }) => {
   if (!isOpen || !user) return null;
@@ -364,6 +365,48 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </span>
                 </div>
               </div>
+
+              {/* Purchased Schematics Online Reader List */}
+              {orders.length > 0 && onOpenOnlineReader && (
+                <div className="pt-2 space-y-2">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-blue-400" />
+                    <span>My Purchased Schematics ({orders.flatMap((o) => o.items).length})</span>
+                  </span>
+
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {orders.flatMap((o) => o.items).map((item, idx) => (
+                      <div
+                        key={`${item.product.id}-${idx}`}
+                        className="bg-slate-950/80 p-2.5 rounded-xl border border-slate-800 flex items-center justify-between gap-2"
+                      >
+                        <div className="flex items-center gap-2.5 truncate">
+                          <img
+                            src={item.product.imageCover}
+                            alt={item.product.title}
+                            className="w-9 h-10 object-cover rounded-lg border border-slate-800 shrink-0"
+                          />
+                          <div className="truncate">
+                            <h4 className="text-xs font-bold text-white truncate">{item.product.title}</h4>
+                            <span className="text-[10px] text-slate-400">{item.product.category}</span>
+                          </div>
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            onClose();
+                            onOpenOnlineReader(item.product);
+                          }}
+                          className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 border border-blue-500/40 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View Online</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>

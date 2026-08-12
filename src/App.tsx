@@ -7,7 +7,6 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { CartDrawer } from './components/CartDrawer';
 import { PaymentModal } from './components/PaymentModal';
 import { OrderSuccessModal } from './components/OrderSuccessModal';
-import { MyDownloadsModal } from './components/MyDownloadsModal';
 import { OnlinePdfReaderModal } from './components/OnlinePdfReaderModal';
 import { SellerStudioModal } from './components/SellerStudioModal';
 import { AuthModal } from './components/AuthModal';
@@ -326,7 +325,6 @@ export default function App() {
   const [checkoutDiscount, setCheckoutDiscount] = useState(0);
 
   const [latestOrder, setLatestOrder] = useState<Order | null>(null);
-  const [isMyDownloadsOpen, setIsMyDownloadsOpen] = useState(false);
   const [onlineReaderProduct, setOnlineReaderProduct] = useState<Product | null>(null);
   const [isSellerStudioOpen, setIsSellerStudioOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -540,9 +538,7 @@ export default function App() {
         onSelectCategory={setSelectedCategory}
         cartCount={cartTotalCount}
         onOpenCart={() => setIsCartOpen(true)}
-        onOpenMyDownloads={() => setIsMyDownloadsOpen(true)}
         onOpenSellerStudio={() => setIsSellerStudioOpen(true)}
-        myDownloadsCount={orders.length}
         user={user}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
@@ -824,13 +820,6 @@ export default function App() {
         onOpenOnlineReader={(p) => setOnlineReaderProduct(p)}
       />
 
-      <MyDownloadsModal
-        isOpen={isMyDownloadsOpen}
-        onClose={() => setIsMyDownloadsOpen(false)}
-        orders={orders}
-        onOpenOnlineReader={(p) => setOnlineReaderProduct(p)}
-      />
-
       <OnlinePdfReaderModal
         product={onlineReaderProduct}
         onClose={() => setOnlineReaderProduct(null)}
@@ -860,7 +849,7 @@ export default function App() {
         user={user}
         orders={orders}
         currency={currency}
-        onOpenMyDownloads={() => setIsMyDownloadsOpen(true)}
+        onOpenOnlineReader={(p) => setOnlineReaderProduct(p)}
         onLogout={handleLogout}
         onUpdateUser={(updated) => {
           setUser(updated);

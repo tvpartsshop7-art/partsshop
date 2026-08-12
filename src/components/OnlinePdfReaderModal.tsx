@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
 import { Product } from '../types';
-import { generateAndDownloadPdf } from '../utils/pdfGenerator';
 import {
   X,
   ChevronLeft,
   ChevronRight,
   ZoomIn,
   ZoomOut,
-  Download,
   FileText,
   Bookmark,
   Printer,
-  Maximize2
+  Maximize2,
+  ShieldCheck
 } from 'lucide-react';
 
 interface OnlinePdfReaderModalProps {
@@ -97,13 +96,10 @@ export const OnlinePdfReaderModal: React.FC<OnlinePdfReaderModalProps> = ({
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => generateAndDownloadPdf(product)}
-              className="py-1.5 px-3 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg flex items-center gap-1"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Save PDF</span>
-            </button>
+            <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-bold">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Protected View</span>
+            </span>
 
             <button
               onClick={onClose}

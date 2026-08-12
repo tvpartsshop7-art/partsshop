@@ -30,9 +30,7 @@ interface NavbarProps {
   onSelectCategory: (cat: string) => void;
   cartCount: number;
   onOpenCart: () => void;
-  onOpenMyDownloads: () => void;
   onOpenSellerStudio: () => void;
-  myDownloadsCount: number;
   user: User | null;
   onOpenAuth: (mode: 'login' | 'signup') => void;
   onLogout: () => void;
@@ -59,9 +57,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onSelectCategory,
   cartCount,
   onOpenCart,
-  onOpenMyDownloads,
   onOpenSellerStudio,
-  myDownloadsCount,
   user,
   onOpenAuth,
   onLogout,

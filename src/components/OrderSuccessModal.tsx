@@ -145,27 +145,17 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto">
-                    {/* Read Online Button */}
+                    {/* Read & View Online Button */}
                     <button
-                      onClick={() => onOpenOnlineReader(item.product)}
-                      className="flex-1 sm:flex-none py-2 px-3 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-200 text-xs font-semibold rounded-lg border border-slate-700 flex items-center justify-center gap-1 transition-colors min-h-[40px] touch-manipulation"
-                      title="Read PDF online in browser"
+                      id={`view-schematic-btn-${item.product.id}`}
+                      onClick={() => {
+                        onClose();
+                        onOpenOnlineReader(item.product);
+                      }}
+                      className="w-full sm:w-auto py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-600/30 flex items-center justify-center gap-1.5 transition-all min-h-[40px] touch-manipulation"
                     >
-                      <Eye className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                      <span>Read Online</span>
-                    </button>
-
-                    {/* Download PDF Button */}
-                    <button
-                      id={`download-pdf-btn-${item.product.id}`}
-                      onClick={() => handleDownloadPdf(item.product)}
-                      disabled={downloadingId === item.product.id}
-                      className="flex-1 sm:flex-none py-2 px-3.5 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-bold rounded-lg shadow flex items-center justify-center gap-1.5 transition-all min-h-[40px] touch-manipulation"
-                    >
-                      <Download className="w-3.5 h-3.5 shrink-0" />
-                      <span>
-                        {downloadingId === item.product.id ? 'Generating...' : 'Download PDF'}
-                      </span>
+                      <Eye className="w-4 h-4 shrink-0" />
+                      <span>View Schematic Online</span>
                     </button>
                   </div>
                 </div>
@@ -173,20 +163,12 @@ export const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({
             </div>
           </div>
 
-          {/* Email / Support Action Bar */}
-          <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-300">A copy of the download link has been emailed to <strong className="text-white">{order.customerEmail}</strong>.</span>
-            </div>
-
-            <button
-              onClick={handleSendEmail}
-              disabled={emailSent}
-              className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-lg border border-slate-700"
-            >
-              {emailSent ? '✓ Sent to Email!' : 'Resend Email'}
-            </button>
+          {/* Instant Access Notice */}
+          <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 flex items-center gap-2 text-xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span className="text-slate-300">
+              Your schematic has been unlocked for online viewing under your account <strong className="text-white">{order.customerEmail}</strong>.
+            </span>
           </div>
         </div>
 
