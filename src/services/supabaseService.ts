@@ -1,5 +1,12 @@
-import { supabase } from '../lib/supabaseClient';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabaseClient';
 import { User, Product, Order, StoreSettings } from '../types';
+
+const REST_HEADERS = {
+  apikey: SUPABASE_ANON_KEY,
+  Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+  'Content-Type': 'application/json',
+  Prefer: 'resolution=merge-duplicates'
+};
 
 // ==================== USERS API ====================
 
@@ -23,15 +30,13 @@ export async function saveUserToSupabase(user: User): Promise<boolean> {
       last_login: user.lastLogin || new Date().toISOString()
     };
 
-    const { error } = await supabase
-      .from('users')
-      .upsert(payload, { onConflict: 'id' });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+      method: 'POST',
+      headers: REST_HEADERS,
+      body: JSON.stringify(payload)
+    });
 
-    if (error) {
-      console.warn('Supabase saveUser error:', error.message);
-      return false;
-    }
-    return true;
+    return res.ok;
   } catch (err) {
     console.warn('Supabase saveUser exception:', err);
     return false;
@@ -40,26 +45,26 @@ export async function saveUserToSupabase(user: User): Promise<boolean> {
 
 export async function fetchUsersFromSupabase(): Promise<User[] | null> {
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?select=*&order=created_at.desc`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
 
-    if (error) {
-      console.warn('Supabase fetchUsers error:', error.message);
+    if (!res.ok) {
       return null;
     }
 
-    if (!data || data.length === 0) {
-      return [];
-    }
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
 
     return data.map((row: any) => ({
-      id: row.id,
-      name: row.name || row.technician_name || 'Member',
+      id: row.id || `usr_${Date.now()}`,
+      name: row.name || row.technician_name || 'Technician',
       technicianName: row.technician_name || row.name,
       email: row.email,
-      phone: row.phone || row.whatsapp_number,
+      phone: row.phone || row.whatsapp_number || '+91 98765 00000',
       whatsappNumber: row.whatsapp_number || row.phone,
       aadharNumber: row.aadhar_number,
       avatar: row.avatar,
@@ -77,7 +82,7 @@ export async function fetchUsersFromSupabase(): Promise<User[] | null> {
   }
 }
 
-// ==================== PRODUCTS API ====================
+// ==================== PRODUCTS & SCHEMATICS API ====================
 
 export async function saveProductToSupabase(product: Product): Promise<boolean> {
   try {
@@ -87,6 +92,7 @@ export async function saveProductToSupabase(product: Product): Promise<boolean> 
       subtitle: product.subtitle,
       description: product.description,
       category: product.category,
+      price: product.priceINR,
       price_inr: product.priceINR,
       price_usd: product.priceUSD,
       original_price_inr: product.originalPriceINR,
@@ -96,29 +102,32 @@ export async function saveProductToSupabase(product: Product): Promise<boolean> 
       review_count: product.reviewCount,
       sales_count: product.salesCount,
       image_cover: product.imageCover,
+      preview_image_url: product.imageCover,
+      file_size: product.pdfFileSize,
       pdf_file_size: product.pdfFileSize,
+      page_count: product.pdfPageCount,
       pdf_page_count: product.pdfPageCount,
-      pdf_file_name: product.pdfFileName || null,
+      pdf_url: product.localPdfDataUrl || null,
+      pdf_file_name: product.pdfFileName || `${product.title}.pdf`,
       local_pdf_data_url: product.localPdfDataUrl || null,
       author_name: product.authorName,
       is_featured: product.isFeatured || false,
       is_active: product.isActive !== false,
       expires_in: product.expiresIn || 'Instant Download',
+      expiry_days: 30,
       key_takeaways: product.keyTakeaways || [],
       table_of_contents: product.tableOfContents || [],
       sample_pages: product.sampleTextPages || [],
-      updated_at: new Date().toISOString()
+      schematics_data: product.sampleTextPages?.[0] || 'Technical Circuit Diagram'
     };
 
-    const { error } = await supabase
-      .from('products')
-      .upsert(payload, { onConflict: 'id' });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+      method: 'POST',
+      headers: REST_HEADERS,
+      body: JSON.stringify(payload)
+    });
 
-    if (error) {
-      console.warn('Supabase saveProduct error:', error.message);
-      return false;
-    }
-    return true;
+    return res.ok;
   } catch (err) {
     console.warn('Supabase saveProduct exception:', err);
     return false;
@@ -127,12 +136,15 @@ export async function saveProductToSupabase(product: Product): Promise<boolean> 
 
 export async function deleteProductFromSupabase(id: string): Promise<boolean> {
   try {
-    const { error } = await supabase.from('products').delete().eq('id', id);
-    if (error) {
-      console.warn('Supabase deleteProduct error:', error.message);
-      return false;
-    }
-    return true;
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?id=eq.${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+
+    return res.ok;
   } catch (err) {
     console.warn('Supabase deleteProduct exception:', err);
     return false;
@@ -141,51 +153,84 @@ export async function deleteProductFromSupabase(id: string): Promise<boolean> {
 
 export async function fetchProductsFromSupabase(): Promise<Product[] | null> {
   try {
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('id', { ascending: false });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?select=*`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
 
-    if (error) {
-      console.warn('Supabase fetchProducts error:', error.message);
+    if (!res.ok) {
+      console.warn('Supabase fetchProducts failed with status:', res.status);
       return null;
     }
 
-    if (!data || data.length === 0) {
-      return [];
-    }
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
 
-    return data.map((row: any) => ({
-      id: row.id,
-      title: row.title,
-      subtitle: row.subtitle,
-      description: row.description,
-      category: row.category,
-      priceINR: Number(row.price_inr) || 299,
-      priceUSD: Number(row.price_usd) || 4,
-      originalPriceINR: Number(row.original_price_inr) || 999,
-      originalPriceUSD: Number(row.original_price_usd) || 12,
-      discountPercent: row.discount_percent,
-      rating: Number(row.rating) || 4.9,
-      reviewCount: Number(row.review_count) || 25,
-      salesCount: Number(row.sales_count) || 10,
-      imageCover: row.image_cover,
-      pdfFileSize: row.pdf_file_size || '10 MB',
-      pdfPageCount: Number(row.pdf_page_count) || 1,
-      pdfFileName: row.pdf_file_name,
-      localPdfDataUrl: row.local_pdf_data_url,
-      authorName: row.author_name || 'Master Engineer',
-      isFeatured: row.is_featured,
-      isActive: row.is_active !== false,
-      expiresIn: row.expires_in || 'Instant Download',
-      keyTakeaways: row.key_takeaways || [],
-      tableOfContents: row.table_of_contents || [],
-      sampleTextPages: row.sample_text_pages || [
-        'Interactive preview not available for this schematic. Full high-resolution vector PDF will be unlocked after purchase.'
-      ],
-      publishedYear: row.published_year || '2026',
-      reviews: []
-    }));
+    return data.map((row: any) => {
+      const priceVal = Number(row.price || row.price_inr || 299);
+      const origPriceVal = Number(row.original_price_inr || Math.round(priceVal * 2.2));
+      const coverImage =
+        row.preview_image_url ||
+        row.image_cover ||
+        'https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=800&auto=format&fit=crop';
+      const fileSize = row.file_size || row.pdf_file_size || '0.5 MB';
+      const pageCount = Number(row.page_count || row.pdf_page_count || 12);
+      const brand = row.brand || '';
+      const modelNo = row.model_number || '';
+      const subtitle =
+        row.subtitle ||
+        (brand ? `${brand} ${modelNo} Technical Circuit Schematics` : 'Technical Schematics Manual');
+
+      return {
+        id: row.id,
+        title: row.title,
+        subtitle: subtitle,
+        description:
+          row.description ||
+          'Verified High-Resolution Technical Circuit Diagram & Service Manual with component test points.',
+        category: row.category || 'Schematics & Hardware',
+        priceINR: priceVal,
+        priceUSD: Number(row.price_usd || Math.round(priceVal / 85)) || 4,
+        originalPriceINR: origPriceVal,
+        originalPriceUSD: Number(row.original_price_usd || Math.round(origPriceVal / 85)) || 10,
+        discountPercent:
+          row.discount_percent ||
+          Math.max(10, Math.round(((origPriceVal - priceVal) / (origPriceVal || 1)) * 100)),
+        rating: Number(row.rating) || 4.9,
+        reviewCount: Number(row.review_count) || 28,
+        salesCount: Number(row.sales_count) || 15,
+        imageCover: coverImage,
+        pdfFileSize: fileSize,
+        pdfPageCount: pageCount,
+        pdfFileName: row.pdf_file_name || `${row.title}.pdf`,
+        localPdfDataUrl: row.pdf_url || row.local_pdf_data_url,
+        authorName:
+          row.author_name || (brand ? `${brand} Engineering Team` : 'Certified Master Technician'),
+        isFeatured: !!row.is_featured,
+        isActive: row.is_active !== false,
+        expiresIn: row.expiry_days
+          ? `${row.expiry_days} Days Access`
+          : row.expires_in || 'Instant Download',
+        keyTakeaways: row.key_takeaways || [
+          'Pin voltages and point-to-point circuit board schematics',
+          'Power supply board troubleshooting guide',
+          'Motherboard fault finding & component diagnosis'
+        ],
+        tableOfContents: row.table_of_contents || [
+          { pageNumber: 1, title: 'Power Block Diagram' },
+          { pageNumber: 4, title: 'Voltage Test Points' },
+          { pageNumber: 8, title: 'Component Schematics & Pinout' }
+        ],
+        sampleTextPages: row.sample_text_pages || [
+          row.schematics_data ||
+            'High-resolution vector schematic sheet. Full PDF will be unlocked after purchase.'
+        ],
+        publishedYear: '2026',
+        reviews: []
+      };
+    });
   } catch (err) {
     console.warn('Supabase fetchProducts exception:', err);
     return null;
@@ -211,15 +256,13 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
       created_at: new Date().toISOString()
     };
 
-    const { error } = await supabase
-      .from('orders')
-      .upsert(payload, { onConflict: 'id' });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+      method: 'POST',
+      headers: REST_HEADERS,
+      body: JSON.stringify(payload)
+    });
 
-    if (error) {
-      console.warn('Supabase saveOrder error:', error.message);
-      return false;
-    }
-    return true;
+    return res.ok;
   } catch (err) {
     console.warn('Supabase saveOrder exception:', err);
     return false;
@@ -228,23 +271,23 @@ export async function saveOrderToSupabase(order: Order): Promise<boolean> {
 
 export async function fetchOrdersFromSupabase(): Promise<Order[] | null> {
   try {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
 
-    if (error) {
-      console.warn('Supabase fetchOrders error:', error.message);
+    if (!res.ok) {
       return null;
     }
 
-    if (!data || data.length === 0) {
-      return [];
-    }
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
 
     return data.map((row: any) => ({
       id: row.id,
-      customerName: row.customer_name,
+      customerName: row.customer_name || 'Verified Customer',
       customerEmail: row.customer_email,
       totalAmountINR: Number(row.total_amount_inr) || 0,
       totalAmountUSD: Number(row.total_amount_usd) || 0,
@@ -278,15 +321,13 @@ export async function saveSettingsToSupabase(settings: StoreSettings): Promise<b
       updated_at: new Date().toISOString()
     };
 
-    const { error } = await supabase
-      .from('settings')
-      .upsert(payload, { onConflict: 'id' });
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/settings`, {
+      method: 'POST',
+      headers: REST_HEADERS,
+      body: JSON.stringify(payload)
+    });
 
-    if (error) {
-      console.warn('Supabase saveSettings error:', error.message);
-      return false;
-    }
-    return true;
+    return res.ok;
   } catch (err) {
     console.warn('Supabase saveSettings exception:', err);
     return false;
@@ -295,25 +336,30 @@ export async function saveSettingsToSupabase(settings: StoreSettings): Promise<b
 
 export async function fetchSettingsFromSupabase(): Promise<StoreSettings | null> {
   try {
-    const { data, error } = await supabase
-      .from('settings')
-      .select('*')
-      .eq('id', 'default_store_settings')
-      .single();
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/settings?id=eq.default_store_settings&select=*`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
 
-    if (error || !data) {
+    if (!res.ok) {
       return null;
     }
 
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return null;
+
+    const row = data[0];
     return {
-      storeName: data.store_name || 'PartsShop',
-      storeTagline: data.store_tagline || 'Technical TV Schematics & PDF Marketplace',
-      announcementActive: data.announcement_active !== false,
-      announcementText: data.announcement_text || '',
-      coupons: data.coupons || [],
-      supportEmail: data.support_email || 'support@partsshop.com',
-      upiId: data.upi_id || 'partsshop@upi',
-      allowGuestCheckout: !!data.allow_guest_checkout
+      storeName: row.store_name || 'PartsShop',
+      storeTagline: row.store_tagline || 'Technical TV Schematics & PDF Marketplace',
+      announcementActive: row.announcement_active !== false,
+      announcementText: row.announcement_text || '',
+      coupons: row.coupons || [],
+      supportEmail: row.support_email || 'support@partsshop.com',
+      upiId: row.upi_id || 'partsshop@upi',
+      allowGuestCheckout: !!row.allow_guest_checkout
     };
   } catch (err) {
     console.warn('Supabase fetchSettings exception:', err);
