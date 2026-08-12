@@ -2,6 +2,17 @@ import { jsPDF } from 'jspdf';
 import { Product, Order } from '../types';
 
 export function generateAndDownloadPdf(product: Product, order?: Partial<Order>) {
+  // If the admin uploaded a local PDF file, download that exact attached PDF file
+  if (product.localPdfDataUrl) {
+    const link = document.createElement('a');
+    link.href = product.localPdfDataUrl;
+    link.download = product.pdfFileName || `${product.title.replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    return;
+  }
+
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',

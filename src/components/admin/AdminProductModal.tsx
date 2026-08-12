@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Product } from '../../types';
 import {
   X,
@@ -14,7 +14,11 @@ import {
   Shield,
   Layers,
   HelpCircle,
-  Upload
+  Upload,
+  Paperclip,
+  FileUp,
+  RefreshCw,
+  FolderOpen
 } from 'lucide-react';
 
 interface AdminProductModalProps {
@@ -79,6 +83,10 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 }) => {
   if (!isOpen) return null;
 
+  // File Input references
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [category, setCategory] = useState('eBook');
@@ -93,6 +101,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [publishedYear, setPublishedYear] = useState('2026');
   const [pdfPageCount, setPdfPageCount] = useState(120);
   const [pdfFileSize, setPdfFileSize] = useState('8.5 MB');
+  const [pdfFileName, setPdfFileName] = useState('');
+  const [localPdfDataUrl, setLocalPdfDataUrl] = useState('');
   const [imageCover, setImageCover] = useState(PRESET_COVERS[0].url);
   const [description, setDescription] = useState('');
   const [keyTakeaways, setKeyTakeaways] = useState<string[]>([
@@ -105,6 +115,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [isActive, setIsActive] = useState(true);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [isDraggingPdf, setIsDraggingPdf] = useState(false);
 
   // Initialize or populate form on open
   useEffect(() => {
@@ -123,18 +134,21 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setPriceUSD(productToEdit.priceUSD || 0);
       setOriginalPriceUSD(productToEdit.originalPriceUSD || 0);
       setDiscountPercent(
-        productToEdit.discountPercent ||
-          Math.round(
-            ((productToEdit.originalPriceINR - productToEdit.priceINR) /
-              (productToEdit.originalPriceINR || 1)) *
-              100
-          )
+        productToEdit.discountPercent !== undefined
+          ? productToEdit.discountPercent
+          : Math.round(
+              ((productToEdit.originalPriceINR - productToEdit.priceINR) /
+                (productToEdit.originalPriceINR || 1)) *
+                100
+            )
       );
       setExpiresIn(productToEdit.expiresIn || 'Lifetime Access');
       setAuthorName(productToEdit.authorName || 'PartsShop Technical Team');
       setPublishedYear(productToEdit.publishedYear || '2026');
       setPdfPageCount(productToEdit.pdfPageCount || 80);
       setPdfFileSize(productToEdit.pdfFileSize || '5.0 MB');
+      setPdfFileName(productToEdit.pdfFileName || '');
+      setLocalPdfDataUrl(productToEdit.localPdfDataUrl || '');
       setImageCover(productToEdit.imageCover || PRESET_COVERS[0].url);
       setDescription(productToEdit.description || '');
       setKeyTakeaways(
@@ -160,6 +174,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setPublishedYear('2026');
       setPdfPageCount(120);
       setPdfFileSize('8.5 MB');
+      setPdfFileName('');
+      setLocalPdfDataUrl('');
       setImageCover(PRESET_COVERS[0].url);
       setDescription(
         'Comprehensive professional digital PDF guide. Features verified step-by-step schematics, architectural patterns, and troubleshooting frameworks. Delivered instantly upon purchase.'
@@ -174,6 +190,71 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       setIsFeatured(false);
     }
   }, [productToEdit, isOpen]);
+
+  // Handle Local PDF File Selection
+  const processPdfFile = (file: File) => {
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+      alert('Please upload a valid PDF file (.pdf format only).');
+      return;
+    }
+
+    // Calculate file size
+    const sizeInMB = file.size / (1024 * 1024);
+    const formattedSize =
+      sizeInMB >= 1 ? `${sizeInMB.toFixed(1)} MB` : `${(file.size / 1024).toFixed(0)} KB`;
+
+    setPdfFileSize(formattedSize);
+    setPdfFileName(file.name);
+
+    // If title is currently empty, suggest title from filename
+    if (!title.trim()) {
+      const cleanName = file.name
+        .replace(/\.pdf$/i, '')
+        .replace(/[-_]/g, ' ')
+        .replace(/\b\w/g, (l) => l.toUpperCase());
+      setTitle(cleanName);
+    }
+
+    // Read file as Data URL / Preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        setLocalPdfDataUrl(e.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handlePdfInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processPdfFile(e.target.files[0]);
+    }
+  };
+
+  // Handle Drag and Drop for PDF
+  const handlePdfDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDraggingPdf(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processPdfFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  // Handle Local Cover Image File Selection
+  const handleImageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImageCover(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Recalculate discount percentage when price or original price changes
   const handlePriceINRChange = (val: number) => {
@@ -251,7 +332,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
     const updatedProduct: Product = {
       id: productToEdit ? productToEdit.id : `pdf-${Date.now()}`,
       title: title.trim(),
-      subtitle: subtitle.trim() || `${finalCategory} - Complete Resource`,
+      subtitle: subtitle.trim() || `${finalCategory} - Complete Technical Resource`,
       category: finalCategory,
       priceINR: Number(priceINR) || 0,
       originalPriceINR: Number(originalPriceINR) || Number(priceINR) || 0,
@@ -265,6 +346,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       imageCover: imageCover.trim() || PRESET_COVERS[0].url,
       pdfPageCount: Number(pdfPageCount) || 50,
       pdfFileSize: pdfFileSize.trim() || '4.5 MB',
+      pdfFileName: pdfFileName.trim() || `${title.replace(/\s+/g, '_')}.pdf`,
+      localPdfDataUrl: localPdfDataUrl || undefined,
       description: description.trim(),
       keyTakeaways: keyTakeaways.length > 0 ? keyTakeaways : ['Instant Digital PDF Download'],
       tableOfContents: productToEdit?.tableOfContents || [
@@ -287,6 +370,22 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+      {/* Hidden File Inputs */}
+      <input
+        type="file"
+        ref={pdfInputRef}
+        onChange={handlePdfInputChange}
+        accept=".pdf,application/pdf"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={imageInputRef}
+        onChange={handleImageInputChange}
+        accept="image/*"
+        className="hidden"
+      />
+
       <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden my-8 flex flex-col max-h-[92vh]">
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50 sticky top-0 z-10">
@@ -299,7 +398,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                 {productToEdit ? 'Edit Product & Pricing' : 'Upload & Publish New PDF Product'}
               </h2>
               <p className="text-xs text-slate-400">
-                Control frontend storefront details, amounts, discounts, and expiry validity.
+                Attach local PDF files, set Title, Description, Amount, Discount, and Expiry validity.
               </p>
             </div>
           </div>
@@ -314,7 +413,100 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
         {/* Modal Body Form */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
-          {/* Section 1: Title & Tagline */}
+          {/* SECTION 1: LOCAL PDF FILE UPLOAD DROPZONE */}
+          <div className="p-5 bg-gradient-to-br from-blue-950/40 via-slate-950 to-slate-950 rounded-2xl border-2 border-dashed border-blue-600/40 hover:border-blue-500 transition-all">
+            <div className="flex items-center justify-between mb-3 border-b border-slate-800/80 pb-2.5">
+              <div className="flex items-center gap-2">
+                <FileUp className="w-4 h-4 text-blue-400" />
+                <span className="font-bold text-white text-sm">Upload Local PDF Document</span>
+              </div>
+              <span className="text-[10px] text-blue-400 bg-blue-950 border border-blue-800/60 px-2 py-0.5 rounded-full font-bold">
+                .PDF File Supported
+              </span>
+            </div>
+
+            {/* If a PDF is attached */}
+            {pdfFileName ? (
+              <div className="bg-slate-900 border border-slate-700/80 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-xl bg-red-600/20 border border-red-500/30 text-red-400 flex items-center justify-center font-black text-xs shrink-0">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-white text-xs truncate max-w-xs sm:max-w-md">
+                        {pdfFileName}
+                      </span>
+                      <span className="bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Attached
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      File Size: <strong className="text-slate-200">{pdfFileSize}</strong> • Pages:{' '}
+                      <strong className="text-slate-200">{pdfPageCount}p</strong>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => pdfInputRef.current?.click()}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold border border-slate-700 transition-colors flex items-center gap-1"
+                  >
+                    <FolderOpen className="w-3.5 h-3.5 text-blue-400" />
+                    <span>Change File</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPdfFileName('');
+                      setLocalPdfDataUrl('');
+                      setPdfFileSize('4.5 MB');
+                    }}
+                    className="px-3 py-1.5 bg-red-950/40 hover:bg-red-950/80 text-red-300 rounded-xl text-xs font-bold border border-red-800/60 transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* If no PDF attached yet - Show Upload Drag Area */
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDraggingPdf(true);
+                }}
+                onDragLeave={() => setIsDraggingPdf(false)}
+                onDrop={handlePdfDrop}
+                onClick={() => pdfInputRef.current?.click()}
+                className={`cursor-pointer text-center py-6 px-4 rounded-xl border transition-all ${
+                  isDraggingPdf
+                    ? 'bg-blue-600/20 border-blue-500'
+                    : 'bg-slate-900/60 hover:bg-slate-900 border-slate-800 hover:border-slate-700'
+                }`}
+              >
+                <div className="w-12 h-12 rounded-2xl bg-blue-600/10 border border-blue-500/20 text-blue-400 mx-auto flex items-center justify-center mb-3">
+                  <Upload className="w-6 h-6 animate-bounce" />
+                </div>
+                <h4 className="font-bold text-white text-sm">
+                  Click to select Local PDF or Drag & Drop here
+                </h4>
+                <p className="text-slate-400 text-xs mt-1">
+                  Upload complete manual, schematic diagram, or eBook from your computer (.pdf)
+                </p>
+                <div className="mt-3">
+                  <span className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-lg shadow-blue-600/30 transition-all">
+                    <FolderOpen className="w-4 h-4" />
+                    <span>Browse PDF File from PC</span>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* SECTION 2: TITLE & SUBTITLE */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <label className="block text-slate-300 font-bold mb-1.5">
@@ -344,7 +536,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Pricing, Discount & Expiry */}
+          {/* SECTION 3: PRICING, DISCOUNT & EXPIRY */}
           <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800/80 space-y-4">
             <div className="flex items-center gap-2 text-slate-200 font-bold text-sm border-b border-slate-800/60 pb-2">
               <DollarSign className="w-4 h-4 text-emerald-400" />
@@ -445,7 +637,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
           </div>
 
-          {/* Section 3: Category, Author & File Specs */}
+          {/* SECTION 4: CATEGORY, AUTHOR & PDF SPECS */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-slate-300 font-bold mb-1.5">Category</label>
@@ -486,43 +678,58 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             <div>
               <label className="block text-slate-300 font-bold mb-1.5">PDF Specifications</label>
               <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  value={pdfPageCount}
-                  onChange={(e) => setPdfPageCount(Number(e.target.value))}
-                  placeholder="Pages"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white outline-none focus:border-blue-500"
-                  min="1"
-                />
-                <input
-                  type="text"
-                  value={pdfFileSize}
-                  onChange={(e) => setPdfFileSize(e.target.value)}
-                  placeholder="File Size (e.g. 8.4 MB)"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white outline-none focus:border-blue-500"
-                />
+                <div>
+                  <input
+                    type="number"
+                    value={pdfPageCount}
+                    onChange={(e) => setPdfPageCount(Number(e.target.value))}
+                    placeholder="Pages"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white outline-none focus:border-blue-500"
+                    min="1"
+                  />
+                  <span className="text-[10px] text-slate-500 mt-0.5 block">Total Pages</span>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={pdfFileSize}
+                    onChange={(e) => setPdfFileSize(e.target.value)}
+                    placeholder="e.g. 8.4 MB"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-white outline-none focus:border-blue-500"
+                  />
+                  <span className="text-[10px] text-slate-500 mt-0.5 block">File Size</span>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Section 4: Cover Image */}
-          <div>
-            <label className="block text-slate-300 font-bold mb-1.5 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
+          {/* SECTION 5: COVER IMAGE (LOCAL UPLOAD + PRESETS + URL) */}
+          <div className="p-4 bg-slate-950/60 rounded-2xl border border-slate-800/80 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800/60 pb-2">
+              <label className="text-slate-300 font-bold flex items-center gap-1.5">
                 <ImageIcon className="w-4 h-4 text-blue-400" />
-                <span>Cover Image URL</span>
-              </span>
-              <span className="text-slate-500 font-normal">Click preset or enter image URL</span>
-            </label>
-            <div className="flex gap-3 mb-3">
+                <span>Product Cover Image</span>
+              </label>
+
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 px-3 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-colors"
+              >
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload Image from PC</span>
+              </button>
+            </div>
+
+            <div className="flex gap-3">
               <input
                 type="url"
                 value={imageCover}
                 onChange={(e) => setImageCover(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white outline-none focus:border-blue-500"
+                placeholder="Paste Image URL or click Upload Image above..."
+                className="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-white outline-none focus:border-blue-500"
               />
-              <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shrink-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-950 border border-slate-700 shrink-0 shadow">
                 <img
                   src={imageCover}
                   alt="Cover preview"
@@ -535,7 +742,8 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
 
             {/* Presets buttons */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="text-[11px] text-slate-500 self-center mr-1">Quick Presets:</span>
               {PRESET_COVERS.map((preset) => (
                 <button
                   key={preset.label}
@@ -544,7 +752,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
                   className={`px-3 py-1 rounded-lg text-[11px] font-medium border transition-colors ${
                     imageCover === preset.url
                       ? 'bg-blue-600 text-white border-blue-500'
-                      : 'bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700'
+                      : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700'
                   }`}
                 >
                   {preset.label}
@@ -553,7 +761,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
           </div>
 
-          {/* Section 5: Description with AI Auto-Generator */}
+          {/* SECTION 6: DESCRIPTION & AI GENERATOR */}
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-slate-300 font-bold flex items-center gap-1.5">
@@ -579,7 +787,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             />
           </div>
 
-          {/* Section 6: Key Highlights / Bullets */}
+          {/* SECTION 7: KEY TAKEAWAYS */}
           <div>
             <label className="block text-slate-300 font-bold mb-1.5">Key Highlights / Takeaways</label>
             <div className="space-y-2 mb-2">
@@ -628,7 +836,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
           </div>
 
-          {/* Section 7: Store Visibility Flags */}
+          {/* SECTION 8: STORE VISIBILITY */}
           <div className="p-4 bg-slate-950/70 border border-slate-800 rounded-2xl flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2.5 cursor-pointer select-none">
@@ -665,7 +873,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
             </div>
           </div>
 
-          {/* Footer Submit Buttons */}
+          {/* FOOTER ACTIONS */}
           <div className="pt-4 border-t border-slate-800 flex items-center justify-end gap-3 sticky bottom-0 bg-slate-900 pb-2">
             <button
               type="button"

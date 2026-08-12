@@ -45,6 +45,8 @@ export interface Product {
   imageCover: string;
   pdfPageCount: number;
   pdfFileSize: string; // e.g. "4.8 MB"
+  pdfFileName?: string;
+  localPdfDataUrl?: string;
   description: string;
   keyTakeaways: string[];
   tableOfContents: TableOfContentItem[];
