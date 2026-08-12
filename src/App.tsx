@@ -593,7 +593,7 @@ export default function App() {
             <h2 className="text-base sm:text-xl font-bold text-white flex items-center gap-2">
               <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 shrink-0" />
               <span className="truncate">
-                {selectedCategory === 'All' ? 'All Featured PDF Products' : `${selectedCategory} Files`}
+                All Featured Technical Schematics
               </span>
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
