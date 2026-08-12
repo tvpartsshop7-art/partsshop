@@ -213,28 +213,47 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     onUpdateSettings(updatedSettings);
   };
 
-  // Filtered Products
+  // Filtered Products (100% Null-Safe)
   const filteredProducts = useMemo(() => {
+    const q = (productSearch || '').toLowerCase().trim();
     return products.filter((p) => {
+      if (!p) return false;
+      const titleStr = (p.title || '').toLowerCase();
+      const descStr = (p.description || '').toLowerCase();
+      const catStr = (p.category || '').toLowerCase();
+      const authorStr = (p.authorName || '').toLowerCase();
+      const subStr = (p.subtitle || '').toLowerCase();
+
       const matchesSearch =
-        p.title.toLowerCase().includes(productSearch.toLowerCase()) ||
-        p.description.toLowerCase().includes(productSearch.toLowerCase()) ||
-        p.category.toLowerCase().includes(productSearch.toLowerCase()) ||
-        (p.authorName && p.authorName.toLowerCase().includes(productSearch.toLowerCase()));
+        !q ||
+        titleStr.includes(q) ||
+        descStr.includes(q) ||
+        catStr.includes(q) ||
+        authorStr.includes(q) ||
+        subStr.includes(q);
+
       const matchesCat =
         productCategoryFilter === 'All' || p.category === productCategoryFilter;
       return matchesSearch && matchesCat;
     });
   }, [products, productSearch, productCategoryFilter]);
 
-  // Filtered Users
+  // Filtered Users (100% Null-Safe)
   const filteredUsers = useMemo(() => {
-    return users.filter(
-      (u) =>
-        u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-        u.email.toLowerCase().includes(userSearch.toLowerCase()) ||
-        (u.phone && u.phone.includes(userSearch))
-    );
+    const q = (userSearch || '').toLowerCase().trim();
+    return users.filter((u) => {
+      if (!u) return false;
+      const nameStr = (u.name || u.technicianName || '').toLowerCase();
+      const emailStr = (u.email || '').toLowerCase();
+      const phoneStr = (u.phone || u.whatsappNumber || '');
+
+      return (
+        !q ||
+        nameStr.includes(q) ||
+        emailStr.includes(q) ||
+        phoneStr.includes(q)
+      );
+    });
   }, [users, userSearch]);
 
   // Filtered Orders
@@ -703,17 +722,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                               <div className="flex items-center gap-3">
                                 <div className="w-12 h-14 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shrink-0">
                                   <img
-                                    src={product.imageCover}
-                                    alt={product.title}
+                                    src={product.imageCover || 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=800'}
+                                    alt={product.title || 'Product'}
                                     className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=800';
+                                    }}
                                   />
                                 </div>
                                 <div className="max-w-xs">
                                   <div className="font-bold text-white line-clamp-1">
-                                    {product.title}
+                                    {product.title || 'Untitled Schematic'}
                                   </div>
                                   <div className="text-[11px] text-slate-400 line-clamp-1">
-                                    By {product.authorName} • {product.pdfPageCount}p • {product.pdfFileSize}
+                                    By {product.authorName || 'PartsShop Team'} • {product.pdfPageCount || 1}p • {product.pdfFileSize || '1.0 MB'}
                                   </div>
                                 </div>
                               </div>
@@ -722,15 +744,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             {/* Category */}
                             <td className="py-3.5 px-4">
                               <span className="bg-slate-800 text-slate-300 px-2 py-1 rounded-lg border border-slate-700 text-[10px] font-semibold">
-                                {product.category}
+                                {product.category || 'Schematics & Hardware'}
                               </span>
                             </td>
 
                             {/* Price */}
                             <td className="py-3.5 px-4">
-                              <div className="font-black text-white">₹{product.priceINR}</div>
+                              <div className="font-black text-white">₹{product.priceINR || 0}</div>
                               <div className="text-[10px] text-slate-500 line-through">
-                                ₹{product.originalPriceINR}
+                                ₹{product.originalPriceINR || (product.priceINR ? product.priceINR * 2 : 0)}
                               </div>
                             </td>
 
@@ -754,7 +776,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
                             {/* Sales */}
                             <td className="py-3.5 px-4 font-bold text-slate-300">
-                              {product.salesCount.toLocaleString()}
+                              {(product.salesCount || 0).toLocaleString()}
                             </td>
 
                             {/* Status */}

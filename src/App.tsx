@@ -459,18 +459,27 @@ export default function App() {
     saveSettingsToSupabase(newSettings);
   };
 
-  // Filtered Active Products List for Storefront
+  // Filtered Active Products List for Storefront (100% Null-Safe)
   const filteredProducts = products.filter((p) => {
+    if (!p) return false;
     if (p.isActive === false) return false;
     const matchesCategory =
       selectedCategory === 'All' || p.category === selectedCategory;
-    const q = searchQuery.toLowerCase();
+    const q = (searchQuery || '').toLowerCase().trim();
+    if (!q) return matchesCategory;
+
+    const titleStr = (p.title || '').toLowerCase();
+    const subStr = (p.subtitle || '').toLowerCase();
+    const descStr = (p.description || '').toLowerCase();
+    const authorStr = (p.authorName || '').toLowerCase();
+    const catStr = (p.category || '').toLowerCase();
+
     const matchesSearch =
-      !q ||
-      p.title.toLowerCase().includes(q) ||
-      p.subtitle.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      (p.authorName && p.authorName.toLowerCase().includes(q));
+      titleStr.includes(q) ||
+      subStr.includes(q) ||
+      descStr.includes(q) ||
+      authorStr.includes(q) ||
+      catStr.includes(q);
 
     return matchesCategory && matchesSearch;
   });

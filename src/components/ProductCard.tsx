@@ -31,15 +31,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onBuyNow,
   isInCart = false
 }) => {
-  const price = currency === 'INR' ? `₹${product.priceINR}` : `$${product.priceUSD}`;
-  const origPrice =
-    currency === 'INR' ? `₹${product.originalPriceINR}` : `$${product.originalPriceUSD}`;
+  const priceINR = Number(product.priceINR) || 0;
+  const originalPriceINR = Number(product.originalPriceINR) || (priceINR ? priceINR * 2 : 0);
+  const priceUSD = Number(product.priceUSD) || Math.round(priceINR / 83) || 0;
+  const originalPriceUSD = Number(product.originalPriceUSD) || (priceUSD ? priceUSD * 2 : 0);
+
+  const price = currency === 'INR' ? `₹${priceINR}` : `$${priceUSD}`;
+  const origPrice = currency === 'INR' ? `₹${originalPriceINR}` : `$${originalPriceUSD}`;
   const discountPercent =
     product.discountPercent !== undefined
       ? product.discountPercent
-      : Math.round(
-          ((product.originalPriceINR - product.priceINR) / (product.originalPriceINR || 1)) * 100
-        );
+      : Math.round(((originalPriceINR - priceINR) / (originalPriceINR || 1)) * 100);
+
+  const coverImg = product.imageCover || 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=800';
 
   return (
     <div
@@ -52,10 +56,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         onClick={() => onSelectProduct(product)}
       >
         <img
-          src={product.imageCover}
-          alt={product.title}
+          src={coverImg}
+          alt={product.title || 'Schematics PDF'}
           referrerPolicy="no-referrer"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1550009158-9ebf69173e03?q=80&w=800';
+          }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 
@@ -84,10 +91,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {/* Category & Page Specs Badge */}
         <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-xs text-slate-300 font-medium z-10">
           <span className="bg-slate-900/90 backdrop-blur-md px-2 py-0.5 rounded-md text-slate-300 border border-slate-700/60 text-[10px] sm:text-[11px] truncate max-w-[120px]">
-            {product.category}
+            {product.category || 'Schematics'}
           </span>
           <span className="bg-slate-900/90 backdrop-blur-md px-2 py-0.5 rounded-md text-blue-400 font-bold border border-slate-700/60 text-[10px] sm:text-[11px]">
-            {product.pdfPageCount}p • {product.pdfFileSize}
+            {product.pdfPageCount || 1}p • {product.pdfFileSize || '1.0 MB'}
           </span>
         </div>
       </div>
@@ -99,11 +106,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <div className="flex items-center justify-between text-xs text-slate-400 mb-1.5">
             <div className="flex items-center gap-1 text-amber-400 font-bold text-[11px] sm:text-xs">
               <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-amber-400 text-amber-400" />
-              <span>{product.rating}</span>
-              <span className="text-slate-500 font-normal">({product.reviewCount})</span>
+              <span>{product.rating || 4.9}</span>
+              <span className="text-slate-500 font-normal">({product.reviewCount || 12})</span>
             </div>
             <span className="text-[10px] sm:text-[11px] text-slate-400 font-semibold">
-              {product.salesCount.toLocaleString()}+ Sold
+              {(product.salesCount || 0).toLocaleString()}+ Sold
             </span>
           </div>
 
@@ -112,17 +119,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             onClick={() => onSelectProduct(product)}
             className="text-sm sm:text-base font-bold text-white group-hover:text-blue-400 transition-colors line-clamp-2 cursor-pointer mb-1 leading-snug"
           >
-            {product.title}
+            {product.title || 'Untitled Schematic'}
           </h3>
 
           {/* Subtitle */}
           <p className="text-[11px] sm:text-xs text-slate-400 line-clamp-2 mb-2 leading-relaxed">
-            {product.subtitle}
+            {product.subtitle || 'Technical Circuit Diagram & Service Manual'}
           </p>
 
           {/* Author */}
           <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate">
-            By <span className="text-slate-300">{product.authorName}</span>
+            By <span className="text-slate-300">{product.authorName || 'PartsShop Team'}</span>
           </p>
         </div>
 

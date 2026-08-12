@@ -271,7 +271,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               <div>
                 <h3 className="text-base font-bold text-white mb-3">What You'll Learn & Receive:</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {product.keyTakeaways.map((item, idx) => (
+                  {(product.keyTakeaways || ['High-resolution point-to-point schematic diagrams', 'Voltage test points and fault diagnostic chart']).map((item, idx) => (
                     <div key={idx} className="flex items-start gap-2.5 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
                       <CheckCircle2 className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
                       <span className="text-xs text-slate-200">{item}</span>
@@ -316,7 +316,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           {activeTab === 'sample' && (
             <div className="space-y-4">
               <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex items-center justify-between text-xs text-slate-400">
-                <span>PDF Sample Preview Mode (Page {samplePageIndex + 1} of {product.sampleTextPages.length})</span>
+                <span>PDF Sample Preview Mode (Page {samplePageIndex + 1} of {(product.sampleTextPages || ['Sample preview']).length})</span>
                 <div className="flex items-center gap-2">
                   <button
                     disabled={samplePageIndex === 0}
@@ -326,7 +326,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     Previous
                   </button>
                   <button
-                    disabled={samplePageIndex === product.sampleTextPages.length - 1}
+                    disabled={samplePageIndex === (product.sampleTextPages || ['Sample preview']).length - 1}
                     onClick={() => setSamplePageIndex((p) => p + 1)}
                     className="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 rounded font-semibold"
                   >
@@ -342,16 +342,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                 </div>
 
                 <div className="border-b border-slate-200 pb-3 mb-4">
-                  <h4 className="font-bold text-base text-slate-800">{product.title}</h4>
+                  <h4 className="font-bold text-base text-slate-800">{product.title || 'Schematic Diagram'}</h4>
                   <p className="text-xs text-slate-500">Sample Page Excerpt</p>
                 </div>
 
                 <pre className="whitespace-pre-wrap font-sans text-slate-700 leading-relaxed">
-                  {product.sampleTextPages[samplePageIndex] || 'Sample page content preview.'}
+                  {(product.sampleTextPages || ['Sample page content preview.'])[samplePageIndex] || 'Sample page content preview.'}
                 </pre>
 
                 <div className="mt-8 pt-4 border-t border-slate-200 text-center text-xs text-slate-400 font-sans">
-                  Purchase full edition to unlock remaining {product.pdfPageCount - 2} pages instantly.
+                  Purchase full edition to unlock remaining {Math.max(1, (product.pdfPageCount || 10) - 2)} pages instantly.
                 </div>
               </div>
             </div>
@@ -362,7 +362,10 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="space-y-3">
               <h3 className="text-base font-bold text-white mb-2">Detailed Table of Contents</h3>
               <div className="divide-y divide-slate-800 bg-slate-950/60 rounded-xl border border-slate-800 overflow-hidden">
-                {product.tableOfContents.map((toc, idx) => (
+                {(product.tableOfContents || [
+                  { pageNumber: 1, title: 'Power Board Schematic & Voltage Points' },
+                  { pageNumber: 4, title: 'Component Pinout & Troubleshooting' }
+                ]).map((toc, idx) => (
                   <div key={idx} className="p-3.5 flex items-center justify-between text-xs hover:bg-slate-900/60 transition-colors">
                     <span className="font-medium text-slate-200">{toc.title}</span>
                     <span className="text-blue-400 font-semibold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
