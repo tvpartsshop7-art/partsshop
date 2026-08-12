@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Product, User, Order, StoreSettings, CouponCode } from '../../types';
 import { AdminProductModal } from './AdminProductModal';
 import { AdminUserDetailsModal } from './AdminUserDetailsModal';
+import { saveProductToSupabase, deleteProductFromSupabase } from '../../services/supabaseService';
 import {
   BarChart3,
   Package,
@@ -132,7 +133,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setIsProductModalOpen(true);
   };
 
-  const handleSaveProduct = (savedProduct: Product) => {
+  const handleSaveProduct = async (savedProduct: Product) => {
+    // 1. Immediately save to Supabase Database
+    const isSaved = await saveProductToSupabase(savedProduct);
+    if (!isSaved) {
+      console.warn('Direct Supabase save returned false, product updated locally');
+    }
+
+    // 2. Update local state
     const exists = products.some((p) => p.id === savedProduct.id);
     let updated: Product[];
     if (exists) {
@@ -145,14 +153,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setEditingProduct(null);
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     if (window.confirm('Are you sure you want to permanently delete this product?')) {
+      await deleteProductFromSupabase(productId);
       const updated = products.filter((p) => p.id !== productId);
       onUpdateProducts(updated);
     }
   };
 
-  const handleToggleProductActive = (productId: string) => {
+  const handleToggleProductActive = async (productId: string) => {
+    const target = products.find((p) => p.id === productId);
+    if (target) {
+      const updatedTarget = { ...target, isActive: target.isActive === false ? true : false };
+      await saveProductToSupabase(updatedTarget);
+    }
     const updated = products.map((p) =>
       p.id === productId ? { ...p, isActive: p.isActive === false ? true : false } : p
     );

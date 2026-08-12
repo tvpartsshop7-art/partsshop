@@ -25,7 +25,7 @@ interface AdminProductModalProps {
   isOpen: boolean;
   productToEdit: Product | null;
   onClose: () => void;
-  onSaveProduct: (product: Product) => void;
+  onSaveProduct: (product: Product) => void | Promise<any>;
 }
 
 const PRESET_COVERS = [
@@ -116,6 +116,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   const [isFeatured, setIsFeatured] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const [isDraggingPdf, setIsDraggingPdf] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Initialize or populate form on open
   useEffect(() => {
@@ -357,7 +358,7 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
   };
 
   // Save / Submit
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim()) {
@@ -365,45 +366,53 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
       return;
     }
 
-    const finalCategory = category === 'Custom' ? (customCategory.trim() || 'eBook') : category;
+    setIsSaving(true);
+    try {
+      const finalCategory = category === 'Custom' ? (customCategory.trim() || 'eBook') : category;
 
-    const updatedProduct: Product = {
-      id: productToEdit ? productToEdit.id : `pdf-${Date.now()}`,
-      title: title.trim(),
-      subtitle: subtitle.trim() || `${finalCategory} - Complete Technical Resource`,
-      category: finalCategory,
-      priceINR: Number(priceINR) || 0,
-      originalPriceINR: Number(originalPriceINR) || Number(priceINR) || 0,
-      priceUSD: Number(priceUSD) || 0,
-      originalPriceUSD: Number(originalPriceUSD) || Number(priceUSD) || 0,
-      discountPercent: discountPercent,
-      expiresIn: expiresIn.trim() || 'Lifetime Access',
-      rating: productToEdit ? productToEdit.rating : 4.9,
-      reviewCount: productToEdit ? productToEdit.reviewCount : 12,
-      salesCount: productToEdit ? productToEdit.salesCount : 0,
-      imageCover: imageCover.trim() || PRESET_COVERS[0].url,
-      pdfPageCount: Number(pdfPageCount) || 50,
-      pdfFileSize: pdfFileSize.trim() || '4.5 MB',
-      pdfFileName: pdfFileName.trim() || `${title.replace(/\s+/g, '_')}.pdf`,
-      localPdfDataUrl: localPdfDataUrl || undefined,
-      description: description.trim(),
-      keyTakeaways: keyTakeaways.length > 0 ? keyTakeaways : ['Instant Digital PDF Download'],
-      tableOfContents: productToEdit?.tableOfContents || [
-        { pageNumber: 1, title: 'Chapter 1: Overview and Foundations' },
-        { pageNumber: 20, title: 'Chapter 2: Schematics & Technical Architecture' },
-        { pageNumber: 50, title: 'Chapter 3: Diagnostics & Practical Walkthrough' }
-      ],
-      sampleTextPages: productToEdit?.sampleTextPages || [
-        `PREVIEW SAMPLE FOR: ${title.toUpperCase()}\n\nWelcome to this verified digital edition published by PartsShop.\nThis resource delivers practical technical breakdowns, high-resolution schematics, and proven diagnostic procedures.\n\nIncluded Features:\n- Verified Component Pinouts\n- Board Repair & Testing Workflows\n- Instant Offline Printable Format`
-      ],
-      authorName: authorName.trim() || 'PartsShop Team',
-      publishedYear: publishedYear.trim() || '2026',
-      isActive: isActive,
-      isFeatured: isFeatured,
-      createdAt: productToEdit?.createdAt || new Date().toISOString()
-    };
+      const updatedProduct: Product = {
+        id: productToEdit ? productToEdit.id : `pdf-${Date.now()}`,
+        title: title.trim(),
+        subtitle: subtitle.trim() || `${finalCategory} - Complete Technical Resource`,
+        category: finalCategory,
+        priceINR: Number(priceINR) || 0,
+        originalPriceINR: Number(originalPriceINR) || Number(priceINR) || 0,
+        priceUSD: Number(priceUSD) || 0,
+        originalPriceUSD: Number(originalPriceUSD) || Number(priceUSD) || 0,
+        discountPercent: discountPercent,
+        expiresIn: expiresIn.trim() || 'Lifetime Access',
+        rating: productToEdit ? productToEdit.rating : 4.9,
+        reviewCount: productToEdit ? productToEdit.reviewCount : 12,
+        salesCount: productToEdit ? productToEdit.salesCount : 0,
+        imageCover: imageCover.trim() || PRESET_COVERS[0].url,
+        pdfPageCount: Number(pdfPageCount) || 50,
+        pdfFileSize: pdfFileSize.trim() || '4.5 MB',
+        pdfFileName: pdfFileName.trim() || `${title.replace(/\s+/g, '_')}.pdf`,
+        localPdfDataUrl: localPdfDataUrl || undefined,
+        description: description.trim(),
+        keyTakeaways: keyTakeaways.length > 0 ? keyTakeaways : ['Instant Digital PDF Download'],
+        tableOfContents: productToEdit?.tableOfContents || [
+          { pageNumber: 1, title: 'Chapter 1: Overview and Foundations' },
+          { pageNumber: 20, title: 'Chapter 2: Schematics & Technical Architecture' },
+          { pageNumber: 50, title: 'Chapter 3: Diagnostics & Practical Walkthrough' }
+        ],
+        sampleTextPages: productToEdit?.sampleTextPages || [
+          `PREVIEW SAMPLE FOR: ${title.toUpperCase()}\n\nWelcome to this verified digital edition published by PartsShop.\nThis resource delivers practical technical breakdowns, high-resolution schematics, and proven diagnostic procedures.\n\nIncluded Features:\n- Verified Component Pinouts\n- Board Repair & Testing Workflows\n- Instant Offline Printable Format`
+        ],
+        authorName: authorName.trim() || 'PartsShop Team',
+        publishedYear: publishedYear.trim() || '2026',
+        isActive: isActive,
+        isFeatured: isFeatured,
+        createdAt: productToEdit?.createdAt || new Date().toISOString()
+      };
 
-    onSaveProduct(updatedProduct);
+      await onSaveProduct(updatedProduct);
+    } catch (err: any) {
+      console.error('Save product error:', err);
+      alert('Error saving product: ' + (err?.message || 'Please try again'));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -923,10 +932,20 @@ export const AdminProductModal: React.FC<AdminProductModalProps> = ({
 
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2"
+              disabled={isSaving}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-60 text-white font-bold transition-all shadow-lg shadow-blue-600/25 flex items-center gap-2 cursor-pointer disabled:cursor-not-allowed"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{productToEdit ? 'Save Changes' : 'Publish Product to Store'}</span>
+              {isSaving ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                  <span>Saving to Supabase...</span>
+                </>
+              ) : (
+                <>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{productToEdit ? 'Save Changes' : 'Publish Product to Store'}</span>
+                </>
+              )}
             </button>
           </div>
         </form>
