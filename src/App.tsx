@@ -30,7 +30,9 @@ import {
   ArrowRight,
   TrendingUp,
   Star,
-  Megaphone
+  Megaphone,
+  ShoppingCart,
+  User as UserIcon
 } from 'lucide-react';
 
 export default function App() {
@@ -442,75 +444,73 @@ export default function App() {
         onOpenProfile={() => setIsProfileOpen(true)}
       />
 
-      {/* Hero Section */}
-      <section id="hero-section" className="relative bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-b border-slate-800/80 pt-10 pb-12 overflow-hidden">
+      {/* Hero Section (Optimized for Mobile View) */}
+      <section id="hero-section" className="relative bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950 border-b border-slate-800/80 pt-6 sm:pt-10 pb-8 sm:pb-12 overflow-hidden">
         {/* Glow background accent */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-blue-600/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] sm:w-[800px] h-[200px] sm:h-[300px] bg-blue-600/10 blur-[100px] sm:blur-[120px] rounded-full pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
-            <Zap className="w-3.5 h-3.5 fill-blue-400" />
-            <span>Digital Product Store • PDF Schematics & Guides</span>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-3 sm:space-y-4">
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] sm:text-xs font-bold">
+            <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-blue-400" />
+            <span>Digital PDF Store • Schematics & Service Manuals</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
-            Instant Digital PDF Store & Instant Delivery Gateway
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
+            Technical TV Schematics & Instant PDF Hub
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Buy verified technical schematics, circuit manuals, full-stack roadmaps, and cheat sheets.
-            Get watermarked PDF downloads directly to your device right after payment.
+          <p className="text-xs sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed px-2">
+            Download verified technical schematics, circuit manuals, motherboard guides, and diagrams.
+            Get instant watermarked PDF downloads right on your device.
           </p>
 
-          {/* Quick Metrics Bar */}
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs text-slate-300 font-medium">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>Instant PDF Download</span>
+          {/* Quick Metrics Bar (Responsive Grid on Mobile) */}
+          <div className="pt-2 sm:pt-4 grid grid-cols-3 gap-2 sm:gap-6 max-w-2xl mx-auto text-[10px] sm:text-xs text-slate-300 font-semibold">
+            <div className="bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Instant Download</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-blue-400" />
-              <span>Secure UPI & Card Payment</span>
+            <div className="bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <Lock className="w-4 h-4 text-blue-400 shrink-0" />
+              <span>Secure UPI & Cards</span>
             </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-purple-400" />
-              <span>100% Watermarked License</span>
+            <div className="bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
+              <span>Verified PDF Files</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Main Store Area */}
-      <main id="main-store-container" className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      <main id="main-store-container" className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-6 sm:space-y-8 pb-24 md:pb-10">
         {/* Section Title & Filter Summary */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex items-center justify-between gap-2 pb-3 sm:pb-4 border-b border-slate-800">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-400" />
-              <span>
-                {selectedCategory === 'All' ? 'All Featured Digital PDF Products' : `${selectedCategory} PDF Files`}
+            <h2 className="text-base sm:text-xl font-bold text-white flex items-center gap-2">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 shrink-0" />
+              <span className="truncate">
+                {selectedCategory === 'All' ? 'All Featured PDF Products' : `${selectedCategory} Files`}
               </span>
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
-              Showing {filteredProducts.length} high-quality PDF files ready for instant access
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+              Showing {filteredProducts.length} items ready for instant download
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setIsSellerStudioOpen(true)}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow"
-            >
-              <span>+ Quick Creator Upload</span>
-            </button>
-          </div>
+          <button
+            onClick={() => setIsSellerStudioOpen(true)}
+            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 hover:bg-slate-800 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow shrink-0"
+          >
+            <span>+ Upload PDF</span>
+          </button>
         </div>
 
-        {/* Product Grid */}
+        {/* Product Grid (Mobile Responsive 1-col / 2-col / 3-col / 4-col) */}
         {filteredProducts.length === 0 ? (
-          <div className="py-16 text-center space-y-3 bg-slate-900/50 rounded-3xl border border-slate-800 p-8">
-            <FileText className="w-12 h-12 text-slate-600 mx-auto" />
-            <h3 className="text-lg font-bold text-white">No PDF files found</h3>
+          <div className="py-12 text-center space-y-3 bg-slate-900/50 rounded-3xl border border-slate-800 p-6">
+            <FileText className="w-10 h-10 text-slate-600 mx-auto" />
+            <h3 className="text-base font-bold text-white">No PDF files found</h3>
             <p className="text-xs text-slate-400 max-w-md mx-auto">
               We couldn't find any products matching your query "{searchQuery}". Try selecting a different category or resetting your search.
             </p>
@@ -525,7 +525,7 @@ export default function App() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -548,37 +548,37 @@ export default function App() {
         )}
 
         {/* Feature Highlights Banner */}
-        <section className="mt-16 pt-8 border-t border-slate-800/80">
-          <div className="text-center max-w-xl mx-auto mb-8">
-            <h3 className="text-lg font-bold text-white">Why Buy Digital PDFs Here?</h3>
+        <section className="mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-slate-800/80">
+          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 px-2">
+            <h3 className="text-base sm:text-lg font-bold text-white">Why Buy Digital PDFs Here?</h3>
             <p className="text-xs text-slate-400 mt-1">
-              Zero shipping delays, zero paper waste. Clean, high-resolution vector PDF formats.
+              Zero shipping delays, direct download, clean high-resolution schematics.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6">
+            <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-2">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">
                 <Zap className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-white">Instant Dynamic Delivery</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                As soon as your payment is authorized, your custom PDF document is compiled and delivered instantly.
+                As soon as your payment is authorized, your custom PDF document is delivered instantly.
               </p>
             </div>
 
-            <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold">
+            <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-2">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold">
                 <ShieldCheck className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Verified Buyer Licensing</h4>
+              <h4 className="text-sm font-bold text-white">Verified Technician Licensing</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Every downloaded PDF file features a personalized buyer license seal and order watermark.
               </p>
             </div>
 
-            <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
-              <div className="w-10 h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold">
+            <div className="bg-slate-900/60 p-4 sm:p-5 rounded-2xl border border-slate-800 space-y-2">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold">
                 <BookOpen className="w-5 h-5" />
               </div>
               <h4 className="text-sm font-bold text-white">Read Online or Offline</h4>
@@ -591,12 +591,12 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-slate-950 border-t border-slate-800 mt-16 py-8 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="bg-slate-950 border-t border-slate-800 mt-10 py-6 sm:py-8 text-xs text-slate-500 pb-24 md:pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-blue-400" />
             <span className="font-bold text-slate-300">PartsShop</span>
-            <span>— Digital PDF Schematics & Technical Marketplace</span>
+            <span>— Technical PDF Schematics Marketplace</span>
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">
@@ -605,6 +605,78 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Mobile Bottom Navigation Bar (Visible only on mobile/tablet screens) */}
+      <nav id="mobile-bottom-nav" className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-2 py-2 flex items-center justify-around text-[10px] text-slate-400 shadow-2xl safe-area-bottom">
+        {/* Store / Home */}
+        <button
+          onClick={() => {
+            setSelectedCategory('All');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className={`flex flex-col items-center gap-0.5 p-1.5 rounded-xl transition-colors ${
+            selectedCategory === 'All' ? 'text-blue-400 font-bold' : 'hover:text-slate-200'
+          }`}
+        >
+          <Zap className="w-5 h-5" />
+          <span>Store</span>
+        </button>
+
+        {/* My Downloads */}
+        <button
+          onClick={() => setIsMyDownloadsOpen(true)}
+          className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl hover:text-slate-200 transition-colors relative"
+        >
+          <div className="relative">
+            <Download className="w-5 h-5 text-emerald-400" />
+            {orders.length > 0 && (
+              <span className="absolute -top-1 -right-2 bg-emerald-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
+                {orders.length}
+              </span>
+            )}
+          </div>
+          <span>Downloads</span>
+        </button>
+
+        {/* Cart */}
+        <button
+          onClick={() => setIsCartOpen(true)}
+          className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl hover:text-slate-200 transition-colors relative"
+        >
+          <div className="relative">
+            <ShoppingCart className="w-5 h-5 text-blue-400" />
+            {cartTotalCount > 0 && (
+              <span className="absolute -top-1 -right-2 bg-amber-400 text-slate-950 text-[9px] font-black px-1 rounded-full">
+                {cartTotalCount}
+              </span>
+            )}
+          </div>
+          <span>Cart</span>
+        </button>
+
+        {/* User Profile / Login */}
+        <button
+          onClick={() => (user ? setIsProfileOpen(true) : handleOpenAuth('login'))}
+          className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl hover:text-slate-200 transition-colors"
+        >
+          {user ? (
+            user.avatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name}
+                className="w-5 h-5 rounded-full object-cover ring-1 ring-blue-400"
+              />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold">
+                {user.name.charAt(0)}
+              </div>
+            )
+          ) : (
+            <UserIcon className="w-5 h-5 text-slate-400" />
+          )}
+          <span className="truncate max-w-[60px]">{user ? 'Profile' : 'Log In'}</span>
+        </button>
+      </nav>
 
       {/* Modals & Overlays */}
       <ProductDetailModal
