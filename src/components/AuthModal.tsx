@@ -155,44 +155,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }, 600);
   };
 
-  // Preset quick login for easy demo testing
-  const handleQuickDemoLogin = (demoType: 'technician' | 'buyer') => {
-    const demoUser: User =
-      demoType === 'technician'
-        ? {
-            id: 'usr_demo_tech',
-            name: 'Aarav Sharma (Certified TV Technician)',
-            technicianName: 'Aarav Sharma',
-            email: 'aarav.tech@partsshop.com',
-            phone: '+91 98765 43210',
-            whatsappNumber: '+91 98765 43210',
-            aadharNumber: '5412 8891 0023',
-            role: 'buyer',
-            status: 'active',
-            avatar: PRESET_AVATARS[1],
-            createdAt: 'Jan 2026'
-          }
-        : {
-            id: 'usr_demo_buyer',
-            name: 'Priya Patel',
-            technicianName: 'Priya Patel',
-            email: 'priya.patel@techworld.in',
-            phone: '+91 98234 56789',
-            whatsappNumber: '+91 98234 56789',
-            aadharNumber: '8910 2234 5511',
-            role: 'buyer',
-            status: 'active',
-            avatar: PRESET_AVATARS[0],
-            createdAt: 'Feb 2026'
-          };
-
-    setSuccessMsg(`Logged in as ${demoUser.name}`);
-    setTimeout(() => {
-      onLoginSuccess(demoUser);
-      onClose();
-    }, 500);
-  };
-
   return (
     <div
       id="auth-modal-backdrop"
@@ -302,32 +264,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="p-3 bg-emerald-950/80 border border-emerald-800/80 rounded-xl text-emerald-300 flex items-center gap-2 font-medium">
               <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>{successMsg}</span>
-            </div>
-          )}
-
-          {/* Quick Demo Login Option */}
-          {mode === 'login' && !isForgotPassword && (
-            <div className="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 flex items-center justify-between gap-2">
-              <div>
-                <span className="font-bold text-slate-200 text-xs block">Quick Test Logins:</span>
-                <span className="text-[11px] text-slate-400">1-click demo technician login</span>
-              </div>
-              <div className="flex gap-1.5">
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('technician')}
-                  className="px-2.5 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-lg text-[11px] font-bold"
-                >
-                  ⚡ Technician
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleQuickDemoLogin('buyer')}
-                  className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-lg text-[11px] font-bold"
-                >
-                  👤 Buyer
-                </button>
-              </div>
             </div>
           )}
 
