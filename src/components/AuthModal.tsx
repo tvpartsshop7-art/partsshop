@@ -20,6 +20,7 @@ import {
 interface AuthModalProps {
   isOpen: boolean;
   initialMode?: 'login' | 'signup';
+  authNotice?: string;
   onClose: () => void;
   onLoginSuccess: (user: User) => void;
 }
@@ -27,6 +28,7 @@ interface AuthModalProps {
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   initialMode = 'login',
+  authNotice,
   onClose,
   onLoginSuccess
 }) => {
@@ -153,6 +155,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Optional Context Notice (e.g. Purchase Requirement) */}
+        {authNotice && (
+          <div className="bg-amber-950/70 border-b border-amber-800/80 px-4 py-2.5 text-xs text-amber-200 flex items-center gap-2">
+            <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+            <span className="font-semibold">{authNotice}</span>
+          </div>
+        )}
 
         {/* Tab Switcher (Login vs Sign Up) */}
         {!isForgotPassword && (

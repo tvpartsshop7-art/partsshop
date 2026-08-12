@@ -104,6 +104,8 @@ export default function App() {
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
+  const [authNotice, setAuthNotice] = useState('');
+  const [pendingCheckout, setPendingCheckout] = useState<{ items: CartItem[]; discount: number } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -113,9 +115,24 @@ export default function App() {
     }
   }, [user]);
 
-  const handleOpenAuth = (mode: 'login' | 'signup') => {
+  const handleOpenAuth = (mode: 'login' | 'signup', notice: string = '') => {
     setAuthMode(mode);
+    setAuthNotice(notice);
     setIsAuthOpen(true);
+  };
+
+  const handleLoginSuccess = (loggedInUser: User) => {
+    setUser(loggedInUser);
+    setIsAuthOpen(false);
+    setAuthNotice('');
+
+    // If a purchase was initiated before logging in, resume it immediately!
+    if (pendingCheckout) {
+      setCheckoutItems(pendingCheckout.items);
+      setCheckoutDiscount(pendingCheckout.discount);
+      setIsPaymentModalOpen(true);
+      setPendingCheckout(null);
+    }
   };
 
   const handleLogout = () => {
@@ -262,15 +279,27 @@ export default function App() {
     setCartItems((prev) => prev.filter((item) => item.product.id !== productId));
   };
 
-  // Direct Buy Now handler
+  // Direct Buy Now handler (Strictly requires User Login/Signup first)
   const handleBuyNow = (product: Product) => {
+    if (!user) {
+      setPendingCheckout({ items: [{ product, quantity: 1 }], discount: 0 });
+      setSelectedProduct(null);
+      handleOpenAuth('login', 'Please log in or create an account first to purchase & instantly download this PDF.');
+      return;
+    }
     setCheckoutItems([{ product, quantity: 1 }]);
     setCheckoutDiscount(0);
     setIsPaymentModalOpen(true);
   };
 
-  // Proceed to Checkout from Cart Drawer
+  // Proceed to Checkout from Cart Drawer (Strictly requires User Login/Signup first)
   const handleProceedToCheckoutFromCart = (discount: number) => {
+    if (!user) {
+      setPendingCheckout({ items: cartItems, discount });
+      setIsCartOpen(false);
+      handleOpenAuth('login', 'Please log in or create an account first to complete your checkout and download your PDFs.');
+      return;
+    }
     setCheckoutItems(cartItems);
     setCheckoutDiscount(discount);
     setIsCartOpen(false);
@@ -634,8 +663,13 @@ export default function App() {
       <AuthModal
         isOpen={isAuthOpen}
         initialMode={authMode}
-        onClose={() => setIsAuthOpen(false)}
-        onLoginSuccess={(u) => setUser(u)}
+        authNotice={authNotice}
+        onClose={() => {
+          setIsAuthOpen(false);
+          setAuthNotice('');
+          setPendingCheckout(null);
+        }}
+        onLoginSuccess={handleLoginSuccess}
       />
 
       <UserProfileModal
