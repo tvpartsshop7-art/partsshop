@@ -12,6 +12,7 @@ import { AuthModal } from './components/AuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { AdminLogin } from './components/admin/AdminLogin';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { AdminErrorBoundary } from './components/admin/AdminErrorBoundary';
 import {
   saveUserToSupabase,
   fetchUsersFromSupabase,
@@ -500,19 +501,21 @@ export default function App() {
     }
 
     return (
-      <AdminPanel
-        products={products}
-        users={users}
-        orders={orders}
-        settings={settings}
-        onUpdateProducts={handleAdminUpdateProducts}
-        onUpdateUsers={handleAdminUpdateUsers}
-        onUpdateSettings={handleAdminUpdateSettings}
-        onLogoutAdmin={handleAdminLogout}
-        onBackToStore={() => navigateTo('store')}
-        onRefreshFromCloud={handleRefreshFromCloud}
-        isRefreshingCloud={isCloudSyncing}
-      />
+      <AdminErrorBoundary onBackToStore={() => navigateTo('store')}>
+        <AdminPanel
+          products={products}
+          users={users}
+          orders={orders}
+          settings={settings}
+          onUpdateProducts={handleAdminUpdateProducts}
+          onUpdateUsers={handleAdminUpdateUsers}
+          onUpdateSettings={handleAdminUpdateSettings}
+          onLogoutAdmin={handleAdminLogout}
+          onBackToStore={() => navigateTo('store')}
+          onRefreshFromCloud={handleRefreshFromCloud}
+          isRefreshingCloud={isCloudSyncing}
+        />
+      </AdminErrorBoundary>
     );
   }
 

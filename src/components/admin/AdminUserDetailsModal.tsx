@@ -168,7 +168,7 @@ export const AdminUserDetailsModal: React.FC<AdminUserDetailsModalProps> = ({
                         </span>
                       </div>
                       <p className="text-[11px] text-slate-400 mt-1">
-                        {order.items.map((i) => i.product.title).join(', ')}
+                        {(order.items || []).map((i) => i?.product?.title || 'Schematic').join(', ')}
                       </p>
                       <div className="text-[10px] text-slate-500 mt-1 flex items-center gap-2">
                         <span>Token: <span className="font-mono text-slate-400">{order.downloadToken}</span></span>

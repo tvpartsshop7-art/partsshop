@@ -256,15 +256,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     });
   }, [users, userSearch]);
 
-  // Filtered Orders
+  // Filtered Orders (100% Null-Safe)
   const filteredOrders = useMemo(() => {
-    return orders.filter(
-      (o) =>
-        o.id.toLowerCase().includes(orderSearch.toLowerCase()) ||
-        o.customerName.toLowerCase().includes(orderSearch.toLowerCase()) ||
-        o.customerEmail.toLowerCase().includes(orderSearch.toLowerCase()) ||
-        o.paymentReference.toLowerCase().includes(orderSearch.toLowerCase())
-    );
+    const q = (orderSearch || '').toLowerCase().trim();
+    return orders.filter((o) => {
+      if (!o) return false;
+      const idStr = (o.id || '').toLowerCase();
+      const nameStr = (o.customerName || '').toLowerCase();
+      const emailStr = (o.customerEmail || '').toLowerCase();
+      const refStr = (o.paymentReference || '').toLowerCase();
+
+      return (
+        !q ||
+        idStr.includes(q) ||
+        nameStr.includes(q) ||
+        emailStr.includes(q) ||
+        refStr.includes(q)
+      );
+    });
   }, [orders, orderSearch]);
 
   return (
@@ -613,9 +622,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           <div className="text-[11px] text-slate-500">{order.customerEmail}</div>
                         </td>
                         <td className="py-3.5 text-slate-300 max-w-xs truncate">
-                          {order.items.map((i) => i.product.title).join(', ')}
+                          {(order.items || []).map((i) => i?.product?.title || 'Schematic').join(', ')}
                         </td>
-                        <td className="py-3.5 font-bold text-white">₹{order.totalAmountINR}</td>
+                        <td className="py-3.5 font-bold text-white">₹{order.totalAmountINR || 0}</td>
                         <td className="py-3.5">
                           <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700 text-[10px] font-bold uppercase">
                             {order.paymentMethod}
@@ -1014,21 +1023,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                         <tr key={order.id} className="hover:bg-slate-800/40 transition-colors">
                           <td className="py-3.5 px-4 font-mono font-bold text-white">{order.id}</td>
                           <td className="py-3.5 px-4">
-                            <div className="font-bold text-slate-200">{order.customerName}</div>
-                            <div className="text-[11px] text-slate-400">{order.customerEmail}</div>
+                            <div className="font-bold text-slate-200">{order.customerName || 'Customer'}</div>
+                            <div className="text-[11px] text-slate-400">{order.customerEmail || '—'}</div>
                             {order.customerPhone && (
                               <div className="text-[10px] text-slate-500">{order.customerPhone}</div>
                             )}
                           </td>
                           <td className="py-3.5 px-4 text-slate-300 max-w-xs">
-                            {order.items.map((i) => (
-                              <div key={i.product.id} className="truncate">
-                                • {i.product.title} (x{i.quantity})
+                            {(order.items || []).map((i, idx) => (
+                              <div key={i?.product?.id || idx} className="truncate">
+                                • {i?.product?.title || 'Schematic'} (x{i?.quantity || 1})
                               </div>
                             ))}
                           </td>
                           <td className="py-3.5 px-4 font-black text-emerald-400">
-                            ₹{order.totalAmountINR}
+                            ₹{order.totalAmountINR || 0}
                           </td>
                           <td className="py-3.5 px-4">
                             <span className="font-mono text-[11px] text-slate-300 bg-slate-950 px-2 py-1 rounded border border-slate-800">
@@ -1218,7 +1227,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
               {/* Coupons List */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {localSettings.coupons.map((coupon) => (
+                {(localSettings.coupons || []).map((coupon) => (
                   <div
                     key={coupon.id}
                     className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between"
