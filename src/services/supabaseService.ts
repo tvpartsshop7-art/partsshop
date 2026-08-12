@@ -5,7 +5,7 @@ const REST_HEADERS = {
   apikey: SUPABASE_ANON_KEY,
   Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
   'Content-Type': 'application/json',
-  Prefer: 'resolution=merge-duplicates'
+  Prefer: 'resolution=merge-duplicates,return=representation'
 };
 
 // ==================== USERS API ====================
@@ -27,16 +27,21 @@ export async function saveUserToSupabase(user: User): Promise<boolean> {
       total_spent_inr: user.totalSpentINR || 0,
       total_downloads: user.totalDownloads || 0,
       created_at: user.createdAt || new Date().toISOString(),
-      last_login: user.lastLogin || new Date().toISOString()
+      last_login: new Date().toISOString()
     };
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/users?on_conflict=email`, {
       method: 'POST',
       headers: REST_HEADERS,
       body: JSON.stringify(payload)
     });
 
-    return res.ok;
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn('Supabase saveUser failed:', res.status, errText);
+      return false;
+    }
+    return true;
   } catch (err) {
     console.warn('Supabase saveUser exception:', err);
     return false;
@@ -89,45 +94,34 @@ export async function saveProductToSupabase(product: Product): Promise<boolean> 
     const payload = {
       id: product.id,
       title: product.title,
-      subtitle: product.subtitle,
-      description: product.description,
-      category: product.category,
-      price: product.priceINR,
-      price_inr: product.priceINR,
-      price_usd: product.priceUSD,
-      original_price_inr: product.originalPriceINR,
-      original_price_usd: product.originalPriceUSD,
-      discount_percent: product.discountPercent,
-      rating: product.rating,
-      review_count: product.reviewCount,
-      sales_count: product.salesCount,
-      image_cover: product.imageCover,
-      preview_image_url: product.imageCover,
-      file_size: product.pdfFileSize,
-      pdf_file_size: product.pdfFileSize,
-      page_count: product.pdfPageCount,
-      pdf_page_count: product.pdfPageCount,
-      pdf_url: product.localPdfDataUrl || null,
-      pdf_file_name: product.pdfFileName || `${product.title}.pdf`,
-      local_pdf_data_url: product.localPdfDataUrl || null,
-      author_name: product.authorName,
-      is_featured: product.isFeatured || false,
-      is_active: product.isActive !== false,
-      expires_in: product.expiresIn || 'Instant Download',
+      brand: product.authorName || 'Universal',
+      category: product.category || 'Schematics & Hardware',
+      model_number: product.subtitle || '',
+      price: product.priceINR || 299,
       expiry_days: 30,
-      key_takeaways: product.keyTakeaways || [],
-      table_of_contents: product.tableOfContents || [],
-      sample_pages: product.sampleTextPages || [],
-      schematics_data: product.sampleTextPages?.[0] || 'Technical Circuit Diagram'
+      file_size: product.pdfFileSize || '1.0 MB',
+      page_count: product.pdfPageCount || 1,
+      description: product.description || '',
+      schematics_data: product.sampleTextPages?.[0] || 'Technical Circuit Diagram',
+      pdf_url: product.localPdfDataUrl || product.imageCover || '',
+      pdf_file_name: product.pdfFileName || `${product.title}.pdf`,
+      preview_image_url: product.imageCover || '',
+      is_sample_available: true,
+      created_at: Date.now()
     };
 
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/products`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/products?on_conflict=id`, {
       method: 'POST',
       headers: REST_HEADERS,
       body: JSON.stringify(payload)
     });
 
-    return res.ok;
+    if (!res.ok) {
+      const errText = await res.text();
+      console.warn('Supabase saveProduct failed:', res.status, errText);
+      return false;
+    }
+    return true;
   } catch (err) {
     console.warn('Supabase saveProduct exception:', err);
     return false;
