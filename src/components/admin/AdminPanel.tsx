@@ -267,6 +267,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           {/* Quick Header Buttons */}
           <div className="flex items-center gap-2.5">
+            {/* Supabase Status Indicator */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs font-bold shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Supabase Cloud Live</span>
+            </div>
+
             <button
               onClick={onBackToStore}
               className="flex items-center gap-1.5 text-xs font-bold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 active:bg-slate-600 border border-slate-700 px-3.5 py-2 rounded-xl transition-all shadow-sm"

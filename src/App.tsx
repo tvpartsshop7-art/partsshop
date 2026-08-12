@@ -18,6 +18,17 @@ import { UserProfileModal } from './components/UserProfileModal';
 import { AdminLogin } from './components/admin/AdminLogin';
 import { AdminPanel } from './components/admin/AdminPanel';
 import {
+  saveUserToSupabase,
+  fetchUsersFromSupabase,
+  saveProductToSupabase,
+  deleteProductFromSupabase,
+  fetchProductsFromSupabase,
+  saveOrderToSupabase,
+  fetchOrdersFromSupabase,
+  saveSettingsToSupabase,
+  fetchSettingsFromSupabase
+} from './services/supabaseService';
+import {
   FileText,
   ShieldCheck,
   Zap,
@@ -138,6 +149,9 @@ export default function App() {
     setIsAuthOpen(false);
     setAuthNotice('');
 
+    // Save/sync user profile directly to Supabase cloud
+    saveUserToSupabase(loggedInUser);
+
     // If a purchase was initiated before logging in, resume it immediately!
     if (pendingCheckout) {
       setCheckoutItems(pendingCheckout.items);
@@ -226,6 +240,36 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('pdfstore_settings_db', JSON.stringify(settings));
   }, [settings]);
+
+  // Initial Supabase Cloud Data Fetch & Sync
+  useEffect(() => {
+    async function initCloudSync() {
+      try {
+        const [cloudProducts, cloudUsers, cloudOrders, cloudSettings] = await Promise.all([
+          fetchProductsFromSupabase(),
+          fetchUsersFromSupabase(),
+          fetchOrdersFromSupabase(),
+          fetchSettingsFromSupabase()
+        ]);
+
+        if (cloudProducts && cloudProducts.length > 0) {
+          setProducts(cloudProducts);
+        }
+        if (cloudUsers && cloudUsers.length > 0) {
+          setUsers(cloudUsers);
+        }
+        if (cloudOrders && cloudOrders.length > 0) {
+          setOrders(cloudOrders);
+        }
+        if (cloudSettings) {
+          setSettings((prev) => ({ ...prev, ...cloudSettings }));
+        }
+      } catch (err) {
+        console.warn('Supabase cloud fetch note:', err);
+      }
+    }
+    initCloudSync();
+  }, []);
 
   // Cart State
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -325,33 +369,36 @@ export default function App() {
     setCartItems([]); // Clear cart
     setLatestOrder(newOrder); // Open Order Success Modal
 
-    // Update salesCount on purchased products
+    // Save order directly to Supabase cloud
+    saveOrderToSupabase(newOrder);
+
+    // Update salesCount on purchased products and sync each to Supabase
     const purchasedIds = new Set(newOrder.items.map((i) => i.product.id));
     setProducts((prev) =>
       prev.map((p) => {
         if (purchasedIds.has(p.id)) {
-          return { ...p, salesCount: (p.salesCount || 0) + 1 };
+          const updated = { ...p, salesCount: (p.salesCount || 0) + 1 };
+          saveProductToSupabase(updated);
+          return updated;
         }
         return p;
       })
     );
 
-    // If user is logged in or new buyer, update/add user statistics
+    // If user is logged in or new buyer, update/add user statistics & sync to Supabase
     setUsers((prev) => {
       const existingUser = prev.find(
         (u) => u.email.toLowerCase() === newOrder.customerEmail.toLowerCase()
       );
       if (existingUser) {
-        return prev.map((u) =>
-          u.id === existingUser.id
-            ? {
-                ...u,
-                totalPurchases: (u.totalPurchases || 0) + 1,
-                totalSpentINR: (u.totalSpentINR || 0) + (newOrder.totalAmountINR || 0),
-                totalDownloads: (u.totalDownloads || 0) + (newOrder.downloadCount || 1)
-              }
-            : u
-        );
+        const updatedUser: User = {
+          ...existingUser,
+          totalPurchases: (existingUser.totalPurchases || 0) + 1,
+          totalSpentINR: (existingUser.totalSpentINR || 0) + (newOrder.totalAmountINR || 0),
+          totalDownloads: (existingUser.totalDownloads || 0) + (newOrder.downloadCount || 1)
+        };
+        saveUserToSupabase(updatedUser);
+        return prev.map((u) => (u.id === existingUser.id ? updatedUser : u));
       } else {
         const newUser: User = {
           id: `user-${Date.now()}`,
@@ -366,14 +413,32 @@ export default function App() {
           createdAt: new Date().toISOString(),
           lastLogin: new Date().toISOString()
         };
+        saveUserToSupabase(newUser);
         return [newUser, ...prev];
       }
     });
   };
 
-  // Add Custom Product from Seller Studio
+  // Add Custom Product from Seller Studio & sync to Supabase
   const handleAddCustomProduct = (newProd: Product) => {
     setProducts((prev) => [newProd, ...prev]);
+    saveProductToSupabase(newProd);
+  };
+
+  // Admin sync helpers
+  const handleAdminUpdateProducts = (newProducts: Product[]) => {
+    setProducts(newProducts);
+    newProducts.forEach((p) => saveProductToSupabase(p));
+  };
+
+  const handleAdminUpdateUsers = (newUsers: User[]) => {
+    setUsers(newUsers);
+    newUsers.forEach((u) => saveUserToSupabase(u));
+  };
+
+  const handleAdminUpdateSettings = (newSettings: StoreSettings) => {
+    setSettings(newSettings);
+    saveSettingsToSupabase(newSettings);
   };
 
   // Filtered Active Products List for Storefront
@@ -413,9 +478,9 @@ export default function App() {
         users={users}
         orders={orders}
         settings={settings}
-        onUpdateProducts={setProducts}
-        onUpdateUsers={setUsers}
-        onUpdateSettings={setSettings}
+        onUpdateProducts={handleAdminUpdateProducts}
+        onUpdateUsers={handleAdminUpdateUsers}
+        onUpdateSettings={handleAdminUpdateSettings}
         onLogoutAdmin={handleAdminLogout}
         onBackToStore={() => navigateTo('store')}
       />
