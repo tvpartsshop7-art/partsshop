@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Product, Currency, CartItem, Order, User, StoreSettings } from './types';
-import { MOCK_PRODUCTS } from './data/mockProducts';
-import { MOCK_USERS } from './data/mockUsers';
-import { MOCK_INITIAL_ORDERS } from './data/mockOrders';
 import { DEFAULT_STORE_SETTINGS } from './data/mockSettings';
 import { Navbar } from './components/Navbar';
 import { ProductCard } from './components/ProductCard';
@@ -168,55 +165,56 @@ export default function App() {
   // Search & Filters
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [isCloudSyncing, setIsCloudSyncing] = useState(true);
 
-  // Master Products State (with localStorage persistence)
+  // Master Products State (Loaded purely from Supabase)
   const [products, setProducts] = useState<Product[]>(() => {
     const saved = localStorage.getItem('pdfstore_products_db');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       } catch (e) {}
     }
-    return MOCK_PRODUCTS;
+    return [];
   });
 
   useEffect(() => {
     localStorage.setItem('pdfstore_products_db', JSON.stringify(products));
   }, [products]);
 
-  // Master Users State (with localStorage persistence)
+  // Master Users State (Loaded purely from Supabase)
   const [users, setUsers] = useState<User[]>(() => {
     const saved = localStorage.getItem('pdfstore_users_db');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       } catch (e) {}
     }
-    return MOCK_USERS;
+    return [];
   });
 
   useEffect(() => {
     localStorage.setItem('pdfstore_users_db', JSON.stringify(users));
   }, [users]);
 
-  // Master Orders State (with localStorage persistence)
+  // Master Orders State (Loaded purely from Supabase)
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = localStorage.getItem('pdfstore_orders_db');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           return parsed;
         }
       } catch (e) {}
     }
-    return MOCK_INITIAL_ORDERS;
+    return [];
   });
 
   useEffect(() => {
@@ -241,34 +239,38 @@ export default function App() {
     localStorage.setItem('pdfstore_settings_db', JSON.stringify(settings));
   }, [settings]);
 
-  // Initial Supabase Cloud Data Fetch & Sync
-  useEffect(() => {
-    async function initCloudSync() {
-      try {
-        const [cloudProducts, cloudUsers, cloudOrders, cloudSettings] = await Promise.all([
-          fetchProductsFromSupabase(),
-          fetchUsersFromSupabase(),
-          fetchOrdersFromSupabase(),
-          fetchSettingsFromSupabase()
-        ]);
+  // Cloud Fetch & Synchronization with Supabase
+  const handleRefreshFromCloud = async () => {
+    setIsCloudSyncing(true);
+    try {
+      const [cloudProducts, cloudUsers, cloudOrders, cloudSettings] = await Promise.all([
+        fetchProductsFromSupabase(),
+        fetchUsersFromSupabase(),
+        fetchOrdersFromSupabase(),
+        fetchSettingsFromSupabase()
+      ]);
 
-        if (cloudProducts && cloudProducts.length > 0) {
-          setProducts(cloudProducts);
-        }
-        if (cloudUsers && cloudUsers.length > 0) {
-          setUsers(cloudUsers);
-        }
-        if (cloudOrders && cloudOrders.length > 0) {
-          setOrders(cloudOrders);
-        }
-        if (cloudSettings) {
-          setSettings((prev) => ({ ...prev, ...cloudSettings }));
-        }
-      } catch (err) {
-        console.warn('Supabase cloud fetch note:', err);
+      if (cloudProducts !== null) {
+        setProducts(cloudProducts);
       }
+      if (cloudUsers !== null) {
+        setUsers(cloudUsers);
+      }
+      if (cloudOrders !== null) {
+        setOrders(cloudOrders);
+      }
+      if (cloudSettings !== null) {
+        setSettings(cloudSettings);
+      }
+    } catch (err) {
+      console.warn('Supabase sync note:', err);
+    } finally {
+      setIsCloudSyncing(false);
     }
-    initCloudSync();
+  };
+
+  useEffect(() => {
+    handleRefreshFromCloud();
   }, []);
 
   // Cart State
@@ -483,6 +485,8 @@ export default function App() {
         onUpdateSettings={handleAdminUpdateSettings}
         onLogoutAdmin={handleAdminLogout}
         onBackToStore={() => navigateTo('store')}
+        onRefreshFromCloud={handleRefreshFromCloud}
+        isRefreshingCloud={isCloudSyncing}
       />
     );
   }
@@ -581,23 +585,44 @@ export default function App() {
           </button>
         </div>
 
-        {/* Product Grid (Mobile Responsive 1-col / 2-col / 3-col / 4-col) */}
-        {filteredProducts.length === 0 ? (
+        {/* Product Grid (Pure Supabase Live Data) */}
+        {isCloudSyncing && products.length === 0 ? (
+          <div className="py-16 text-center space-y-3 bg-slate-900/50 rounded-3xl border border-slate-800 p-8">
+            <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
+            <h3 className="text-base font-bold text-white">Connecting to Supabase Database...</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              Fetching live technical schematics, products, and configurations.
+            </p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="py-12 text-center space-y-3 bg-slate-900/50 rounded-3xl border border-slate-800 p-6">
             <FileText className="w-10 h-10 text-slate-600 mx-auto" />
-            <h3 className="text-base font-bold text-white">No PDF files found</h3>
+            <h3 className="text-base font-bold text-white">
+              {products.length === 0 ? 'No Products in Supabase Yet' : 'No PDF files found'}
+            </h3>
             <p className="text-xs text-slate-400 max-w-md mx-auto">
-              We couldn't find any products matching your query "{searchQuery}". Try selecting a different category or resetting your search.
+              {products.length === 0
+                ? 'Your Supabase database is connected! Upload your first TV circuit schematic or PDF product in the Admin Panel.'
+                : `We couldn't find any products matching "${searchQuery}". Try resetting your filter.`}
             </p>
-            <button
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('All');
-              }}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl"
-            >
-              Reset Filters
-            </button>
+            {products.length === 0 ? (
+              <button
+                onClick={() => navigateTo('admin')}
+                className="mt-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-bold rounded-xl shadow-md"
+              >
+                Go to Admin Panel to Upload
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedCategory('All');
+                }}
+                className="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl"
+              >
+                Reset Filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 sm:gap-6">

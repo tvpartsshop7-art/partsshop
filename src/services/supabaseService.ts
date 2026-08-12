@@ -45,8 +45,13 @@ export async function fetchUsersFromSupabase(): Promise<User[] | null> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data) {
+    if (error) {
+      console.warn('Supabase fetchUsers error:', error.message);
       return null;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
     }
 
     return data.map((row: any) => ({
@@ -141,8 +146,13 @@ export async function fetchProductsFromSupabase(): Promise<Product[] | null> {
       .select('*')
       .order('id', { ascending: false });
 
-    if (error || !data || data.length === 0) {
+    if (error) {
+      console.warn('Supabase fetchProducts error:', error.message);
       return null;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
     }
 
     return data.map((row: any) => ({
@@ -223,8 +233,13 @@ export async function fetchOrdersFromSupabase(): Promise<Order[] | null> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data) {
+    if (error) {
+      console.warn('Supabase fetchOrders error:', error.message);
       return null;
+    }
+
+    if (!data || data.length === 0) {
+      return [];
     }
 
     return data.map((row: any) => ({

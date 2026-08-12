@@ -46,6 +46,8 @@ interface AdminPanelProps {
   onUpdateSettings: (newSettings: StoreSettings) => void;
   onLogoutAdmin: () => void;
   onBackToStore: () => void;
+  onRefreshFromCloud?: () => Promise<void>;
+  isRefreshingCloud?: boolean;
 }
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({
@@ -57,7 +59,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   onUpdateUsers,
   onUpdateSettings,
   onLogoutAdmin,
-  onBackToStore
+  onBackToStore,
+  onRefreshFromCloud,
+  isRefreshingCloud = false
 }) => {
   // Navigation active tab
   const [activeTab, setActiveTab] = useState<'analytics' | 'products' | 'users' | 'orders' | 'settings'>('analytics');
@@ -267,10 +271,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           {/* Quick Header Buttons */}
           <div className="flex items-center gap-2.5">
-            {/* Supabase Status Indicator */}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs font-bold shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Supabase Cloud Live</span>
+            {/* Supabase Status Indicator & Refresh */}
+            <div className="flex items-center gap-1.5">
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs font-bold shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>Supabase Live</span>
+              </div>
+
+              {onRefreshFromCloud && (
+                <button
+                  onClick={onRefreshFromCloud}
+                  disabled={isRefreshingCloud}
+                  className="flex items-center gap-1.5 text-xs font-bold text-blue-300 hover:text-white bg-blue-950/80 hover:bg-blue-900/80 active:bg-blue-800 border border-blue-800/80 px-3 py-1.5 rounded-xl transition-all shadow-sm disabled:opacity-50"
+                  title="Reload live data from Supabase Cloud"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingCloud ? 'animate-spin text-amber-400' : 'text-blue-400'}`} />
+                  <span>{isRefreshingCloud ? 'Syncing...' : 'Sync Supabase'}</span>
+                </button>
+              )}
             </div>
 
             <button
