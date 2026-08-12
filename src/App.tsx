@@ -36,16 +36,24 @@ import {
 } from 'lucide-react';
 
 export default function App() {
-  // Routing State: 'store' | 'admin'
-  const [currentRoute, setCurrentRoute] = useState<'store' | 'admin'>(() => {
+  const checkIsAdminRoute = () => {
     if (typeof window !== 'undefined') {
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
-      if (path.startsWith('/admin') || hash === '#admin') {
-        return 'admin';
-      }
+      const search = window.location.search.toLowerCase();
+      return (
+        path.startsWith('/admin') ||
+        path.includes('admin') ||
+        hash.includes('admin') ||
+        search.includes('admin')
+      );
     }
-    return 'store';
+    return false;
+  };
+
+  // Routing State: 'store' | 'admin'
+  const [currentRoute, setCurrentRoute] = useState<'store' | 'admin'>(() => {
+    return checkIsAdminRoute() ? 'admin' : 'store';
   });
 
   // Admin Auth State
@@ -56,12 +64,10 @@ export default function App() {
     return false;
   });
 
-  // Listen to browser URL changes & back/forward navigation
+  // Listen to browser URL changes, hash changes & back/forward navigation
   useEffect(() => {
     const handleLocationChange = () => {
-      const path = window.location.pathname.toLowerCase();
-      const hash = window.location.hash.toLowerCase();
-      if (path.startsWith('/admin') || hash === '#admin') {
+      if (checkIsAdminRoute()) {
         setCurrentRoute('admin');
       } else {
         setCurrentRoute('store');
@@ -69,7 +75,11 @@ export default function App() {
     };
 
     window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
   }, []);
 
   // Programmatic router navigation helper
