@@ -3,8 +3,11 @@ export type Currency = 'INR' | 'USD';
 export interface User {
   id: string;
   name: string;
+  technicianName?: string;
   email: string;
   phone?: string;
+  whatsappNumber?: string;
+  aadharNumber?: string;
   avatar?: string;
   role: 'buyer' | 'seller' | 'admin';
   status?: 'active' | 'inactive' | 'suspended';

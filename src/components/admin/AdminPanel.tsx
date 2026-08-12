@@ -827,7 +827,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                           {/* User Name & Avatar */}
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0">
+                              <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 shadow">
                                 {user.avatar ? (
                                   <img
                                     src={user.avatar}
@@ -839,7 +839,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                 )}
                               </div>
                               <div>
-                                <div className="font-bold text-white">{user.name}</div>
+                                <div className="font-bold text-white flex items-center gap-1.5">
+                                  <span>{user.technicianName || user.name}</span>
+                                  {user.aadharNumber && (
+                                    <span className="bg-emerald-950 text-emerald-400 border border-emerald-800 text-[9px] px-1.5 py-0.2 rounded font-mono font-bold">
+                                      Aadhaar ✓
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="text-[11px] text-slate-400">{user.email}</div>
                               </div>
                             </div>
@@ -854,13 +861,15 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                                   : 'bg-blue-950/80 text-blue-300 border-blue-800'
                               }`}
                             >
-                              {user.role}
+                              {user.technicianName ? 'Technician' : user.role}
                             </span>
                           </td>
 
-                          {/* Phone */}
-                          <td className="py-3.5 px-4 text-slate-400">
-                            {user.phone || '+91 98765 00000'}
+                          {/* Phone / WhatsApp */}
+                          <td className="py-3.5 px-4">
+                            <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                              {user.whatsappNumber || user.phone || '+91 98765 00000'}
+                            </span>
                           </td>
 
                           {/* Orders */}

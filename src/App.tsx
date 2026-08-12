@@ -680,6 +680,10 @@ export default function App() {
         currency={currency}
         onOpenMyDownloads={() => setIsMyDownloadsOpen(true)}
         onLogout={handleLogout}
+        onUpdateUser={(updated) => {
+          setUser(updated);
+          setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+        }}
       />
     </div>
   );

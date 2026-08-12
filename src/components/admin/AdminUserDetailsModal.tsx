@@ -112,16 +112,24 @@ export const AdminUserDetailsModal: React.FC<AdminUserDetailsModalProps> = ({
           <div className="bg-slate-950/50 rounded-2xl border border-slate-800/80 p-4 space-y-2.5">
             <h3 className="font-bold text-slate-200 text-xs flex items-center gap-1.5 mb-2">
               <ShieldCheck className="w-4 h-4 text-blue-400" />
-              <span>Account Credentials & Meta</span>
+              <span>Technician Verification Credentials & Meta</span>
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-300">
               <div>
-                <span className="text-slate-500 block">User ID:</span>
-                <span className="font-mono text-slate-300">{user.id}</span>
+                <span className="text-slate-500 block">Technician / Full Name:</span>
+                <span className="font-bold text-white">{user.technicianName || user.name}</span>
               </div>
               <div>
-                <span className="text-slate-500 block">Phone Number:</span>
-                <span>{user.phone || '+91 98765 00000'}</span>
+                <span className="text-slate-500 block">Mobile / WhatsApp No:</span>
+                <span className="font-semibold text-emerald-400">{user.whatsappNumber || user.phone || 'Not provided'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">Aadhaar Card No:</span>
+                <span className="font-mono text-blue-300">{user.aadharNumber || 'Not provided'}</span>
+              </div>
+              <div>
+                <span className="text-slate-500 block">User Email:</span>
+                <span>{user.email}</span>
               </div>
               <div>
                 <span className="text-slate-500 block">Registration Date:</span>
