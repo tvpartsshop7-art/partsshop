@@ -202,7 +202,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                     className="flex-1 sm:flex-none py-2.5 px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5 transition-all touch-manipulation min-h-[42px]"
                   >
                     <Zap className="w-4 h-4 fill-white shrink-0" />
-                    <span>Buy & Download PDF</span>
+                    <span>Buy</span>
                   </button>
                 </div>
               </div>
@@ -419,9 +419,9 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
         {/* Modal Footer Sticky Purchase Bar */}
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-            <span>256-Bit SSL Encrypted • Instant Download</span>
+          <div className="flex items-center gap-1.5 text-slate-400">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <span>256-Bit SSL Encrypted • Instant Online Access</span>
           </div>
 
           <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -442,7 +442,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
               className="flex-1 sm:flex-none py-2.5 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white text-xs font-extrabold rounded-xl shadow-lg shadow-blue-600/30 flex items-center justify-center gap-1.5 touch-manipulation min-h-[42px]"
             >
               <Zap className="w-3.5 h-3.5 fill-white shrink-0" />
-              <span>Instant Buy ({price})</span>
+              <span>Buy ({price})</span>
             </button>
           </div>
         </div>

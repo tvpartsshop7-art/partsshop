@@ -158,7 +158,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               className="w-full py-2.5 px-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:from-blue-700 active:to-indigo-700 text-white text-[11px] sm:text-xs font-black flex items-center justify-center gap-1 shadow-md shadow-blue-600/30 transition-all min-h-[42px] touch-manipulation"
             >
               <Zap className="w-3.5 h-3.5 fill-white shrink-0" />
-              <span>Buy PDF</span>
+              <span>Buy</span>
             </button>
           </div>
         </div>

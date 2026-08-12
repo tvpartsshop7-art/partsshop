@@ -8,7 +8,6 @@ import { CartDrawer } from './components/CartDrawer';
 import { PaymentModal } from './components/PaymentModal';
 import { OrderSuccessModal } from './components/OrderSuccessModal';
 import { OnlinePdfReaderModal } from './components/OnlinePdfReaderModal';
-import { SellerStudioModal } from './components/SellerStudioModal';
 import { AuthModal } from './components/AuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import { AdminLogin } from './components/admin/AdminLogin';
@@ -326,7 +325,6 @@ export default function App() {
 
   const [latestOrder, setLatestOrder] = useState<Order | null>(null);
   const [onlineReaderProduct, setOnlineReaderProduct] = useState<Product | null>(null);
-  const [isSellerStudioOpen, setIsSellerStudioOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Cart helper actions
@@ -445,12 +443,6 @@ export default function App() {
     });
   };
 
-  // Add Custom Product from Seller Studio & sync to Supabase
-  const handleAddCustomProduct = (newProd: Product) => {
-    setProducts((prev) => [newProd, ...prev]);
-    saveProductToSupabase(newProd);
-  };
-
   // Admin sync helpers
   const handleAdminUpdateProducts = (newProducts: Product[]) => {
     setProducts(newProducts);
@@ -538,7 +530,6 @@ export default function App() {
         onSelectCategory={setSelectedCategory}
         cartCount={cartTotalCount}
         onOpenCart={() => setIsCartOpen(true)}
-        onOpenSellerStudio={() => setIsSellerStudioOpen(true)}
         user={user}
         onOpenAuth={handleOpenAuth}
         onLogout={handleLogout}
@@ -561,15 +552,14 @@ export default function App() {
           </h1>
 
           <p className="text-xs sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed px-2">
-            Download verified technical schematics, circuit manuals, motherboard guides, and diagrams.
-            Get instant watermarked PDF downloads right on your device.
+            Instant online access to verified technical schematics, circuit manuals, motherboard guides, and diagrams.
           </p>
 
           {/* Quick Metrics Bar (Responsive Grid on Mobile) */}
           <div className="pt-2 sm:pt-4 grid grid-cols-3 gap-2 sm:gap-6 max-w-2xl mx-auto text-[10px] sm:text-xs text-slate-300 font-semibold">
             <div className="bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Instant Download</span>
+              <span>Instant Online View</span>
             </div>
             <div className="bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
               <Lock className="w-4 h-4 text-blue-400 shrink-0" />
@@ -577,7 +567,7 @@ export default function App() {
             </div>
             <div className="bg-slate-900/60 p-2 sm:p-2.5 rounded-xl border border-slate-800 flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
               <CheckCircle2 className="w-4 h-4 text-purple-400 shrink-0" />
-              <span>Verified PDF Files</span>
+              <span>Verified Schematics</span>
             </div>
           </div>
         </div>
@@ -595,16 +585,9 @@ export default function App() {
               </span>
             </h2>
             <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
-              Showing {filteredProducts.length} items ready for instant download
+              Showing {filteredProducts.length} schematics ready for instant online access
             </p>
           </div>
-
-          <button
-            onClick={() => setIsSellerStudioOpen(true)}
-            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-900 hover:bg-slate-800 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow shrink-0"
-          >
-            <span>+ Upload PDF</span>
-          </button>
         </div>
 
         {/* Product Grid (Pure Supabase Live Data) */}
@@ -823,12 +806,6 @@ export default function App() {
       <OnlinePdfReaderModal
         product={onlineReaderProduct}
         onClose={() => setOnlineReaderProduct(null)}
-      />
-
-      <SellerStudioModal
-        isOpen={isSellerStudioOpen}
-        onClose={() => setIsSellerStudioOpen(false)}
-        onAddProduct={handleAddCustomProduct}
       />
 
       <AuthModal
