@@ -23,7 +23,8 @@ import {
   saveOrderToSupabase,
   fetchOrdersFromSupabase,
   saveSettingsToSupabase,
-  fetchSettingsFromSupabase
+  fetchSettingsFromSupabase,
+  subscribeToRealtimeChanges
 } from './services/supabaseService';
 import {
   FileText,
@@ -270,7 +271,32 @@ export default function App() {
   };
 
   useEffect(() => {
+    // Initial fetch
     handleRefreshFromCloud();
+
+    // Live Real-Time Supabase Listener across all tables
+    const unsubscribe = subscribeToRealtimeChanges({
+      onProductsUpdate: async () => {
+        const fresh = await fetchProductsFromSupabase();
+        if (fresh !== null) setProducts(fresh);
+      },
+      onOrdersUpdate: async () => {
+        const fresh = await fetchOrdersFromSupabase();
+        if (fresh !== null) setOrders(fresh);
+      },
+      onUsersUpdate: async () => {
+        const fresh = await fetchUsersFromSupabase();
+        if (fresh !== null) setUsers(fresh);
+      },
+      onSettingsUpdate: async () => {
+        const fresh = await fetchSettingsFromSupabase();
+        if (fresh !== null) setSettings(fresh);
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, []);
 
   // Cart State

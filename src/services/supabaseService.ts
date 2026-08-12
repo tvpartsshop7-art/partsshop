@@ -1,4 +1,4 @@
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabaseClient';
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../lib/supabaseClient';
 import { User, Product, Order, StoreSettings } from '../types';
 
 const REST_HEADERS = {
@@ -364,5 +364,61 @@ export async function fetchSettingsFromSupabase(): Promise<StoreSettings | null>
   } catch (err) {
     console.warn('Supabase fetchSettings exception:', err);
     return null;
+  }
+}
+
+// ==================== REALTIME SUBSCRIPTIONS API ====================
+
+export function subscribeToRealtimeChanges(callbacks: {
+  onProductsUpdate?: () => void;
+  onOrdersUpdate?: () => void;
+  onUsersUpdate?: () => void;
+  onSettingsUpdate?: () => void;
+}) {
+  try {
+    const channel = supabase
+      .channel('realtime_all_tables_channel')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          console.log('⚡ Realtime Products Change detected!');
+          callbacks.onProductsUpdate?.();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          console.log('⚡ Realtime Orders Change detected!');
+          callbacks.onOrdersUpdate?.();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'users' },
+        () => {
+          console.log('⚡ Realtime Users Change detected!');
+          callbacks.onUsersUpdate?.();
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'settings' },
+        () => {
+          console.log('⚡ Realtime Settings Change detected!');
+          callbacks.onSettingsUpdate?.();
+        }
+      )
+      .subscribe((status) => {
+        console.log('⚡ Supabase Realtime Subscription Status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  } catch (e) {
+    console.warn('Realtime subscription setup notice:', e);
+    return () => {};
   }
 }

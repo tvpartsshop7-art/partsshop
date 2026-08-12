@@ -180,3 +180,18 @@ VALUES (
 ON CONFLICT (id) DO UPDATE SET
     store_name = EXCLUDED.store_name,
     store_tagline = EXCLUDED.store_tagline;
+
+-- ==============================================================================
+-- 5. ENABLE REALTIME BROADCASTING
+-- ==============================================================================
+-- Add all tables to supabase_realtime publication so updates stream instantly
+DO $$
+BEGIN
+  BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.products, public.orders, public.users, public.settings;
+  EXCEPTION
+    WHEN duplicate_object THEN NULL;
+    WHEN others THEN NULL;
+  END;
+END $$;
+
