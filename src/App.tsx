@@ -748,22 +748,6 @@ export default function App() {
           <span>Store</span>
         </button>
 
-        {/* My Downloads */}
-        <button
-          onClick={() => setIsMyDownloadsOpen(true)}
-          className="flex flex-col items-center gap-0.5 p-1.5 rounded-xl hover:text-slate-200 transition-colors relative"
-        >
-          <div className="relative">
-            <Download className="w-5 h-5 text-emerald-400" />
-            {orders.length > 0 && (
-              <span className="absolute -top-1 -right-2 bg-emerald-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                {orders.length}
-              </span>
-            )}
-          </div>
-          <span>Downloads</span>
-        </button>
-
         {/* Cart */}
         <button
           onClick={() => setIsCartOpen(true)}

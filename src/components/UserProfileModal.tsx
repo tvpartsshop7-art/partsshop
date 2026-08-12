@@ -350,11 +350,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
               </div>
 
-              {/* Quick Metrics */}
-              <div className="grid grid-cols-3 gap-3">
+              {/* Quick User Stats */}
+              <div className="grid grid-cols-2 gap-3 pt-1">
                 <div className="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 text-center">
                   <span className="text-slate-400 text-[10px] block">Total Orders</span>
-                  <span className="text-base font-black text-white">{totalOrdersCount}</span>
+                  <span className="text-base font-black text-blue-400">{orders.length}</span>
                 </div>
 
                 <div className="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 text-center">
@@ -363,35 +363,19 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     ₹{totalSpentINR.toLocaleString()}
                   </span>
                 </div>
-
-                <div className="bg-slate-950/70 p-3 rounded-2xl border border-slate-800 text-center">
-                  <span className="text-slate-400 text-[10px] block">PDF Downloads</span>
-                  <span className="text-base font-black text-blue-400">{totalDownloads}</span>
-                </div>
               </div>
             </>
           )}
         </div>
 
         {/* Footer Actions */}
-        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
-          <button
-            onClick={() => {
-              onClose();
-              onOpenMyDownloads();
-            }}
-            className="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/40 rounded-xl font-bold flex items-center gap-1.5 transition-colors"
-          >
-            <Download className="w-4 h-4" />
-            <span>My Purchased PDFs</span>
-          </button>
-
+        <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-end">
           <button
             onClick={() => {
               onClose();
               onLogout();
             }}
-            className="px-3.5 py-2 bg-red-950/40 hover:bg-red-950/70 text-red-400 border border-red-800/60 rounded-xl font-bold flex items-center gap-1.5 transition-colors"
+            className="px-4 py-2 bg-red-950/40 hover:bg-red-950/70 text-red-400 border border-red-800/60 rounded-xl font-bold flex items-center gap-1.5 transition-colors text-xs"
           >
             <LogOut className="w-4 h-4" />
             <span>Log Out</span>

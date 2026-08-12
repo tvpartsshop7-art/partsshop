@@ -140,22 +140,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             {currency === 'INR' ? '₹ INR' : '$ USD'}
           </button>
 
-          {/* My Purchases / Downloads */}
-          <button
-            id="my-downloads-btn"
-            onClick={onOpenMyDownloads}
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700/80 relative transition-colors"
-            title="My Purchased Downloads"
-          >
-            <Download className="w-4 h-4 text-blue-400 shrink-0" />
-            <span className="hidden md:inline">My Downloads</span>
-            {myDownloadsCount > 0 && (
-              <span id="downloads-badge" className="bg-emerald-500 text-white text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center">
-                {myDownloadsCount}
-              </span>
-            )}
-          </button>
-
           {/* Cart Button */}
           <button
             id="cart-drawer-trigger"
@@ -225,17 +209,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <UserIcon className="w-4 h-4 text-blue-400" />
                       <span>My Profile & WhatsApp ID</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onOpenMyDownloads();
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-800 text-slate-200 flex items-center gap-2 font-medium"
-                    >
-                      <Download className="w-4 h-4 text-emerald-400" />
-                      <span>My Purchased PDFs</span>
                     </button>
 
                     <button
