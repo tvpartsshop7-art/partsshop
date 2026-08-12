@@ -47,6 +47,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const price = currency === 'INR' ? `₹${product.priceINR}` : `$${product.priceUSD}`;
   const origPrice =
     currency === 'INR' ? `₹${product.originalPriceINR}` : `$${product.originalPriceUSD}`;
+  const discountPercent =
+    product.discountPercent !== undefined
+      ? product.discountPercent
+      : Math.round(
+          ((product.originalPriceINR - product.priceINR) / (product.originalPriceINR || 1)) * 100
+        );
 
   const handleAskAi = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,8 +167,8 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <span className="font-semibold text-slate-200">{product.pdfPageCount} Printable Pages</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block text-[11px]">Delivery Method</span>
-                  <span className="font-semibold text-emerald-400">Instant PDF Download</span>
+                  <span className="text-slate-500 block text-[11px]">Validity / Expiry</span>
+                  <span className="font-semibold text-blue-400">{product.expiresIn || 'Lifetime Access'}</span>
                 </div>
               </div>
 
@@ -173,6 +179,11 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-extrabold text-white">{price}</span>
                     <span className="text-sm text-slate-500 line-through">{origPrice}</span>
+                    {discountPercent > 0 && (
+                      <span className="bg-amber-500/20 border border-amber-500/30 text-amber-400 text-[11px] font-extrabold px-2 py-0.5 rounded">
+                        {discountPercent}% OFF
+                      </span>
+                    )}
                   </div>
                 </div>
 

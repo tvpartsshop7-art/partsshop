@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Product, Currency, CartItem, Order, User } from './types';
+import { Product, Currency, CartItem, Order, User, StoreSettings } from './types';
 import { MOCK_PRODUCTS } from './data/mockProducts';
+import { MOCK_USERS } from './data/mockUsers';
+import { MOCK_INITIAL_ORDERS } from './data/mockOrders';
+import { DEFAULT_STORE_SETTINGS } from './data/mockSettings';
 import { Navbar } from './components/Navbar';
 import { ProductCard } from './components/ProductCard';
 import { ProductDetailModal } from './components/ProductDetailModal';
@@ -12,6 +15,8 @@ import { OnlinePdfReaderModal } from './components/OnlinePdfReaderModal';
 import { SellerStudioModal } from './components/SellerStudioModal';
 import { AuthModal } from './components/AuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
+import { AdminLogin } from './components/admin/AdminLogin';
+import { AdminPanel } from './components/admin/AdminPanel';
 import {
   FileText,
   ShieldCheck,
@@ -24,10 +29,63 @@ import {
   CheckCircle2,
   ArrowRight,
   TrendingUp,
-  Star
+  Star,
+  Megaphone
 } from 'lucide-react';
 
 export default function App() {
+  // Routing State: 'store' | 'admin'
+  const [currentRoute, setCurrentRoute] = useState<'store' | 'admin'>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path.startsWith('/admin') || hash === '#admin') {
+        return 'admin';
+      }
+    }
+    return 'store';
+  });
+
+  // Admin Auth State
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return !!localStorage.getItem('pdfstore_admin_auth');
+    }
+    return false;
+  });
+
+  // Listen to browser URL changes & back/forward navigation
+  useEffect(() => {
+    const handleLocationChange = () => {
+      const path = window.location.pathname.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      if (path.startsWith('/admin') || hash === '#admin') {
+        setCurrentRoute('admin');
+      } else {
+        setCurrentRoute('store');
+      }
+    };
+
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  // Programmatic router navigation helper
+  const navigateTo = (route: 'store' | 'admin') => {
+    if (route === 'admin') {
+      window.history.pushState(null, '', '/admin');
+      setCurrentRoute('admin');
+    } else {
+      window.history.pushState(null, '', '/');
+      setCurrentRoute('store');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('pdfstore_admin_auth');
+    setIsAdminAuthenticated(false);
+  };
+
   // Store Currency
   const [currency, setCurrency] = useState<Currency>('INR');
 
@@ -68,19 +126,77 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
 
-  // Products list (combining MOCK + Local custom added ones)
+  // Master Products State (with localStorage persistence)
   const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('pdfstore_custom_products');
+    const saved = localStorage.getItem('pdfstore_products_db');
     if (saved) {
       try {
-        const custom = JSON.parse(saved);
-        return [...MOCK_PRODUCTS, ...custom];
-      } catch (e) {
-        return MOCK_PRODUCTS;
-      }
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
     }
     return MOCK_PRODUCTS;
   });
+
+  useEffect(() => {
+    localStorage.setItem('pdfstore_products_db', JSON.stringify(products));
+  }, [products]);
+
+  // Master Users State (with localStorage persistence)
+  const [users, setUsers] = useState<User[]>(() => {
+    const saved = localStorage.getItem('pdfstore_users_db');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return MOCK_USERS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pdfstore_users_db', JSON.stringify(users));
+  }, [users]);
+
+  // Master Orders State (with localStorage persistence)
+  const [orders, setOrders] = useState<Order[]>(() => {
+    const saved = localStorage.getItem('pdfstore_orders_db');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return MOCK_INITIAL_ORDERS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pdfstore_orders_db', JSON.stringify(orders));
+  }, [orders]);
+
+  // Store Settings (Announcement, Coupons, etc.)
+  const [settings, setSettings] = useState<StoreSettings>(() => {
+    const saved = localStorage.getItem('pdfstore_settings_db');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.storeName) {
+          return parsed;
+        }
+      } catch (e) {}
+    }
+    return DEFAULT_STORE_SETTINGS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('pdfstore_settings_db', JSON.stringify(settings));
+  }, [settings]);
 
   // Cart State
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
@@ -95,27 +211,9 @@ export default function App() {
     return [];
   });
 
-  // Orders / Downloads History State
-  const [orders, setOrders] = useState<Order[]>(() => {
-    const saved = localStorage.getItem('pdfstore_orders');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  });
-
-  // Save to LocalStorage
   useEffect(() => {
     localStorage.setItem('pdfstore_cart', JSON.stringify(cartItems));
   }, [cartItems]);
-
-  useEffect(() => {
-    localStorage.setItem('pdfstore_orders', JSON.stringify(orders));
-  }, [orders]);
 
   // Modal Controls
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -179,32 +277,67 @@ export default function App() {
     setIsPaymentModalOpen(true);
   };
 
-  // Payment Success Handler
+  // Payment Success Handler (Updates Orders, Sales Count & User History in real-time)
   const handlePaymentSuccess = (newOrder: Order) => {
     setOrders((prev) => [newOrder, ...prev]);
     setIsPaymentModalOpen(false);
     setCartItems([]); // Clear cart
     setLatestOrder(newOrder); // Open Order Success Modal
+
+    // Update salesCount on purchased products
+    const purchasedIds = new Set(newOrder.items.map((i) => i.product.id));
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (purchasedIds.has(p.id)) {
+          return { ...p, salesCount: (p.salesCount || 0) + 1 };
+        }
+        return p;
+      })
+    );
+
+    // If user is logged in or new buyer, update/add user statistics
+    setUsers((prev) => {
+      const existingUser = prev.find(
+        (u) => u.email.toLowerCase() === newOrder.customerEmail.toLowerCase()
+      );
+      if (existingUser) {
+        return prev.map((u) =>
+          u.id === existingUser.id
+            ? {
+                ...u,
+                totalPurchases: (u.totalPurchases || 0) + 1,
+                totalSpentINR: (u.totalSpentINR || 0) + (newOrder.totalAmountINR || 0),
+                totalDownloads: (u.totalDownloads || 0) + (newOrder.downloadCount || 1)
+              }
+            : u
+        );
+      } else {
+        const newUser: User = {
+          id: `user-${Date.now()}`,
+          name: newOrder.customerName || 'Customer',
+          email: newOrder.customerEmail,
+          phone: newOrder.customerPhone || '+91 98765 00000',
+          role: 'buyer',
+          status: 'active',
+          totalPurchases: 1,
+          totalSpentINR: newOrder.totalAmountINR || 0,
+          totalDownloads: newOrder.downloadCount || 1,
+          createdAt: new Date().toISOString(),
+          lastLogin: new Date().toISOString()
+        };
+        return [newUser, ...prev];
+      }
+    });
   };
 
   // Add Custom Product from Seller Studio
   const handleAddCustomProduct = (newProd: Product) => {
     setProducts((prev) => [newProd, ...prev]);
-
-    // Save custom products to localStorage
-    const savedCustom = localStorage.getItem('pdfstore_custom_products');
-    let customArr = [];
-    if (savedCustom) {
-      try {
-        customArr = JSON.parse(savedCustom);
-      } catch (e) {}
-    }
-    customArr.unshift(newProd);
-    localStorage.setItem('pdfstore_custom_products', JSON.stringify(customArr));
   };
 
-  // Filtered Products List
+  // Filtered Active Products List for Storefront
   const filteredProducts = products.filter((p) => {
+    if (p.isActive === false) return false;
     const matchesCategory =
       selectedCategory === 'All' || p.category === selectedCategory;
     const q = searchQuery.toLowerCase();
@@ -213,15 +346,54 @@ export default function App() {
       p.title.toLowerCase().includes(q) ||
       p.subtitle.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
-      p.authorName.toLowerCase().includes(q);
+      (p.authorName && p.authorName.toLowerCase().includes(q));
 
     return matchesCategory && matchesSearch;
   });
 
   const cartTotalCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
+  // -------------------------------------------------------------
+  // ROUTE: ADMIN PANEL
+  // -------------------------------------------------------------
+  if (currentRoute === 'admin') {
+    if (!isAdminAuthenticated) {
+      return (
+        <AdminLogin
+          onLoginSuccess={() => setIsAdminAuthenticated(true)}
+          onBackToStore={() => navigateTo('store')}
+        />
+      );
+    }
+
+    return (
+      <AdminPanel
+        products={products}
+        users={users}
+        orders={orders}
+        settings={settings}
+        onUpdateProducts={setProducts}
+        onUpdateUsers={setUsers}
+        onUpdateSettings={setSettings}
+        onLogoutAdmin={handleAdminLogout}
+        onBackToStore={() => navigateTo('store')}
+      />
+    );
+  }
+
+  // -------------------------------------------------------------
+  // ROUTE: PUBLIC STOREFRONT (DEFAULT)
+  // -------------------------------------------------------------
   return (
     <div id="app-root" className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-blue-500 selection:text-white flex flex-col">
+      {/* Top Announcement Banner (Controlled from Admin) */}
+      {settings.announcementActive && settings.announcementText && (
+        <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-slate-950 text-xs font-black py-2 px-4 text-center flex items-center justify-center gap-2 shadow-md relative z-40">
+          <Megaphone className="w-3.5 h-3.5 shrink-0" />
+          <span>{settings.announcementText}</span>
+        </div>
+      )}
+
       {/* Header Navigation Bar */}
       <Navbar
         currency={currency}
@@ -249,7 +421,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
             <Zap className="w-3.5 h-3.5 fill-blue-400" />
-            <span>Digital Product Store • PDF Files Only</span>
+            <span>Digital Product Store • PDF Schematics & Guides</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight leading-tight max-w-3xl mx-auto">
@@ -257,7 +429,7 @@ export default function App() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            Buy and sell eBooks, tech roadmaps, pitch deck templates, and cheat sheets.
+            Buy verified technical schematics, circuit manuals, full-stack roadmaps, and cheat sheets.
             Get watermarked PDF downloads directly to your device right after payment.
           </p>
 
@@ -269,7 +441,7 @@ export default function App() {
             </div>
             <div className="flex items-center gap-2">
               <Lock className="w-4 h-4 text-blue-400" />
-              <span>Secure Payment Gateway</span>
+              <span>Secure UPI & Card Payment</span>
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-purple-400" />
@@ -295,33 +467,36 @@ export default function App() {
             </p>
           </div>
 
-          <button
-            onClick={() => setIsSellerStudioOpen(true)}
-            className="self-start sm:self-auto px-4 py-2 bg-slate-900 hover:bg-slate-800 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow"
-          >
-            <Sparkles className="w-4 h-4 text-amber-400" />
-            <span>+ List Your Custom PDF</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsSellerStudioOpen(true)}
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-blue-400 border border-blue-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow"
+            >
+              <span>+ Quick Creator Upload</span>
+            </button>
+          </div>
         </div>
 
-        {/* Product Cards Grid */}
+        {/* Product Grid */}
         {filteredProducts.length === 0 ? (
-          <div className="text-center py-20 bg-slate-900/50 rounded-2xl border border-slate-800 space-y-3">
-            <FileText className="w-10 h-10 text-slate-600 mx-auto" />
-            <h3 className="text-base font-bold text-slate-200">No PDF files matched your search</h3>
-            <p className="text-xs text-slate-500">Try adjusting your category filter or search keywords.</p>
+          <div className="py-16 text-center space-y-3 bg-slate-900/50 rounded-3xl border border-slate-800 p-8">
+            <FileText className="w-12 h-12 text-slate-600 mx-auto" />
+            <h3 className="text-lg font-bold text-white">No PDF files found</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              We couldn't find any products matching your query "{searchQuery}". Try selecting a different category or resetting your search.
+            </p>
             <button
               onClick={() => {
                 setSearchQuery('');
                 setSelectedCategory('All');
               }}
-              className="mt-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold"
+              className="mt-2 px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl"
             >
-              Reset Search & Filters
+              Reset Filters
             </button>
           </div>
         ) : (
-          <div id="products-grid" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
@@ -343,8 +518,15 @@ export default function App() {
           </div>
         )}
 
-        {/* Store Features Grid */}
-        <section className="pt-12 border-t border-slate-800">
+        {/* Feature Highlights Banner */}
+        <section className="mt-16 pt-8 border-t border-slate-800/80">
+          <div className="text-center max-w-xl mx-auto mb-8">
+            <h3 className="text-lg font-bold text-white">Why Buy Digital PDFs Here?</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Zero shipping delays, zero paper waste. Clean, high-resolution vector PDF formats.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-slate-900/60 p-5 rounded-2xl border border-slate-800 space-y-2">
               <div className="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">
@@ -384,13 +566,20 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-blue-400" />
-            <span className="font-bold text-slate-300">PDFStore</span>
-            <span>— Digital PDF Marketplace & Delivery Platform</span>
+            <span className="font-bold text-slate-300">PartsShop</span>
+            <span>— Digital PDF Schematics & Technical Marketplace</span>
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">
             <span>256-Bit SSL Encrypted</span>
             <span>Instant Access Guarantee</span>
+            <button
+              onClick={() => navigateTo('admin')}
+              className="text-slate-400 hover:text-blue-400 font-semibold flex items-center gap-1 transition-colors border border-slate-800 px-2 py-1 rounded-lg bg-slate-900/50"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
+              <span>Admin Portal (/admin)</span>
+            </button>
           </div>
         </div>
       </footer>

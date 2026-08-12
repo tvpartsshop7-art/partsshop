@@ -33,9 +33,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const price = currency === 'INR' ? `₹${product.priceINR}` : `$${product.priceUSD}`;
   const origPrice =
     currency === 'INR' ? `₹${product.originalPriceINR}` : `$${product.originalPriceUSD}`;
-  const discountPercent = Math.round(
-    ((product.originalPriceINR - product.priceINR) / product.originalPriceINR) * 100
-  );
+  const discountPercent =
+    product.discountPercent !== undefined
+      ? product.discountPercent
+      : Math.round(
+          ((product.originalPriceINR - product.priceINR) / (product.originalPriceINR || 1)) * 100
+        );
 
   return (
     <div
@@ -66,6 +69,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {discountPercent > 0 && (
             <span className="bg-amber-500 text-slate-950 text-[10px] font-extrabold px-2 py-1 rounded-md shadow">
               {discountPercent}% OFF
+            </span>
+          )}
+          {product.isFeatured && (
+            <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow">
+              FEATURED
             </span>
           )}
         </div>
@@ -124,7 +132,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             </div>
             <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-2 py-0.5 rounded-md flex items-center gap-1">
               <Zap className="w-3 h-3" />
-              Instant Download
+              {product.expiresIn || 'Instant Download'}
             </span>
           </div>
 

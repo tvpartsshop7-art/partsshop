@@ -4,9 +4,15 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   avatar?: string;
-  role: 'buyer' | 'seller';
+  role: 'buyer' | 'seller' | 'admin';
+  status?: 'active' | 'inactive' | 'suspended';
+  totalPurchases?: number;
+  totalSpentINR?: number;
+  totalDownloads?: number;
   createdAt: string;
+  lastLogin?: string;
 }
 
 export interface TableOfContentItem {
@@ -31,7 +37,9 @@ export interface Product {
   priceUSD: number;
   originalPriceINR: number;
   originalPriceUSD: number;
-  category: 'eBook' | 'Guide' | 'Cheat Sheet' | 'Template' | 'Workbook' | 'Finance';
+  discountPercent?: number;
+  expiresIn?: string; // e.g. "Lifetime Access", "30 Days Validity", "Flash Sale: 24h", "Valid till 31 Dec 2026"
+  category: 'eBook' | 'Guide' | 'Cheat Sheet' | 'Template' | 'Workbook' | 'Finance' | string;
   rating: number;
   reviewCount: number;
   imageCover: string;
@@ -44,6 +52,9 @@ export interface Product {
   authorName: string;
   publishedYear: string;
   salesCount: number;
+  isActive?: boolean; // toggle visibility on store
+  isFeatured?: boolean;
+  createdAt?: string;
   reviews?: Review[];
   customPdfContent?: {
     chapters: { title: string; content: string[] }[];
@@ -60,6 +71,7 @@ export interface Order {
   date: string;
   customerName: string;
   customerEmail: string;
+  customerPhone?: string;
   items: CartItem[];
   totalAmountINR: number;
   totalAmountUSD: number;
@@ -67,4 +79,27 @@ export interface Order {
   paymentMethod: 'upi' | 'card' | 'netbanking' | 'wallet';
   paymentReference: string;
   downloadToken: string;
+  downloadCount?: number;
+  status?: 'completed' | 'pending' | 'refunded';
 }
+
+export interface CouponCode {
+  id: string;
+  code: string;
+  discountPercent: number;
+  minAmountINR: number;
+  isActive: boolean;
+  expiryDate: string;
+}
+
+export interface StoreSettings {
+  storeName: string;
+  storeTagline: string;
+  announcementText: string;
+  announcementActive: boolean;
+  coupons: CouponCode[];
+  supportEmail: string;
+  upiId: string;
+  allowGuestCheckout: boolean;
+}
+
