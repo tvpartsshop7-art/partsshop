@@ -28,7 +28,6 @@ interface NavbarProps {
   onOpenCart: () => void;
   onOpenMyDownloads: () => void;
   onOpenSellerStudio: () => void;
-  onOpenAdmin: () => void;
   myDownloadsCount: number;
   user: User | null;
   onOpenAuth: (mode: 'login' | 'signup') => void;
@@ -57,7 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCart,
   onOpenMyDownloads,
   onOpenSellerStudio,
-  onOpenAdmin,
   myDownloadsCount,
   user,
   onOpenAuth,
@@ -120,17 +118,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Header Right Actions */}
         <div id="header-actions" className="flex items-center gap-2 sm:gap-3">
-          {/* Admin Panel Quick Link Button */}
-          <button
-            id="header-admin-btn"
-            onClick={onOpenAdmin}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/40 hover:bg-red-900/60 text-red-300 hover:text-white text-xs font-bold border border-red-800/60 transition-all shadow-sm"
-            title="Open Admin Console (/admin)"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-red-400" />
-            <span className="hidden sm:inline">Admin</span>
-          </button>
-
           {/* My Purchases / Downloads */}
           <button
             id="my-downloads-btn"
@@ -242,17 +229,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     >
                       <PlusCircle className="w-4 h-4 text-emerald-400" />
                       <span>List PDF for Sale</span>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setIsUserMenuOpen(false);
-                        onOpenAdmin();
-                      }}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-950/30 text-red-300 flex items-center gap-2 font-semibold"
-                    >
-                      <ShieldCheck className="w-4 h-4 text-red-400" />
-                      <span>Admin Management Console</span>
                     </button>
 
                     <hr className="border-slate-800 my-1" />

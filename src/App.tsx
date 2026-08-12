@@ -406,7 +406,6 @@ export default function App() {
         onOpenCart={() => setIsCartOpen(true)}
         onOpenMyDownloads={() => setIsMyDownloadsOpen(true)}
         onOpenSellerStudio={() => setIsSellerStudioOpen(true)}
-        onOpenAdmin={() => navigateTo('admin')}
         myDownloadsCount={orders.length}
         user={user}
         onOpenAuth={handleOpenAuth}
@@ -574,13 +573,6 @@ export default function App() {
           <div className="flex items-center gap-4 text-slate-400">
             <span>256-Bit SSL Encrypted</span>
             <span>Instant Access Guarantee</span>
-            <button
-              onClick={() => navigateTo('admin')}
-              className="text-slate-400 hover:text-blue-400 font-semibold flex items-center gap-1 transition-colors border border-slate-800 px-2 py-1 rounded-lg bg-slate-900/50"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-              <span>Admin Portal (/admin)</span>
-            </button>
           </div>
         </div>
       </footer>
