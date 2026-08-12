@@ -406,6 +406,7 @@ export default function App() {
         onOpenCart={() => setIsCartOpen(true)}
         onOpenMyDownloads={() => setIsMyDownloadsOpen(true)}
         onOpenSellerStudio={() => setIsSellerStudioOpen(true)}
+        onOpenAdmin={() => navigateTo('admin')}
         myDownloadsCount={orders.length}
         user={user}
         onOpenAuth={handleOpenAuth}
