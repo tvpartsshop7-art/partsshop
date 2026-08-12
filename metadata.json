@@ -1,0 +1,6 @@
+{
+  "name": "PDFStore - Digital PDF Marketplace",
+  "description": "Digital product marketplace for selling PDF files with instant secure payment gateway and download delivery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
