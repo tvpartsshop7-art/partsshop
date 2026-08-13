@@ -365,7 +365,7 @@ export default function App() {
     if (!user) {
       setPendingCheckout({ items: [{ product, quantity: 1 }], discount: 0 });
       setSelectedProduct(null);
-      handleOpenAuth('login', 'Please log in or create an account first to purchase & instantly download this PDF.');
+      handleOpenAuth('login', 'Please log in or create an account first to purchase & instantly view this schematic online.');
       return;
     }
     setCheckoutItems([{ product, quantity: 1 }]);
@@ -378,7 +378,7 @@ export default function App() {
     if (!user) {
       setPendingCheckout({ items: cartItems, discount });
       setIsCartOpen(false);
-      handleOpenAuth('login', 'Please log in or create an account first to complete your checkout and download your PDFs.');
+      handleOpenAuth('login', 'Please log in or create an account first to complete your checkout and view your purchased schematics online.');
       return;
     }
     setCheckoutItems(cartItems);
@@ -667,9 +667,9 @@ export default function App() {
         {/* Feature Highlights Banner */}
         <section className="mt-10 sm:mt-16 pt-6 sm:pt-8 border-t border-slate-800/80">
           <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8 px-2">
-            <h3 className="text-base sm:text-lg font-bold text-white">Why Buy Digital PDFs Here?</h3>
+            <h3 className="text-base sm:text-lg font-bold text-white">Why Buy Technical Schematics Here?</h3>
             <p className="text-xs text-slate-400 mt-1">
-              Zero shipping delays, direct download, clean high-resolution schematics.
+              Zero shipping delays, instant online access, clean high-resolution schematics.
             </p>
           </div>
 
@@ -678,9 +678,9 @@ export default function App() {
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold">
                 <Zap className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Instant Dynamic Delivery</h4>
+              <h4 className="text-sm font-bold text-white">Instant Online Access</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                As soon as your payment is authorized, your custom PDF document is delivered instantly.
+                As soon as your payment is authorized, your schematic is unlocked instantly for online viewing.
               </p>
             </div>
 
@@ -690,7 +690,7 @@ export default function App() {
               </div>
               <h4 className="text-sm font-bold text-white">Verified Technician Licensing</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Every downloaded PDF file features a personalized buyer license seal and order watermark.
+                Every schematic features a personalized buyer license seal and secure watermark overlay.
               </p>
             </div>
 
@@ -698,9 +698,9 @@ export default function App() {
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-purple-600/20 text-purple-400 flex items-center justify-center font-bold">
                 <BookOpen className="w-5 h-5" />
               </div>
-              <h4 className="text-sm font-bold text-white">Read Online or Offline</h4>
+              <h4 className="text-sm font-bold text-white">Protected Viewer</h4>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Access your purchased PDF documents inside our built-in browser reader or download for offline reading.
+                Access your purchased documents securely inside our built-in secure browser reader.
               </p>
             </div>
           </div>
