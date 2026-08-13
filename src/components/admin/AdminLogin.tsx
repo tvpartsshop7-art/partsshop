@@ -23,8 +23,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
   onLoginSuccess,
   onBackToStore
 }) => {
-  const [email, setEmail] = useState('admin@partsshop.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,11 +35,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
     setIsLoading(true);
 
     setTimeout(() => {
-      // Admin credential check
+      // Master secure admin credential check
       if (
-        (email.trim().toLowerCase() === 'admin@partsshop.com' ||
-          email.trim().toLowerCase() === 'admin') &&
-        password.trim() === 'admin123'
+        email.trim().toLowerCase() === 'qdigisoftware@gmail.com' &&
+        password.trim() === 'Ali1986'
       ) {
         localStorage.setItem(
           'pdfstore_admin_auth',
@@ -53,15 +52,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
         onLoginSuccess();
       } else {
         setIsLoading(false);
-        setErrorMsg('Invalid Admin credentials. Use admin@partsshop.com / admin123');
+        setErrorMsg('Invalid Admin credentials.');
       }
     }, 450);
-  };
-
-  const handleQuickFill = () => {
-    setEmail('admin@partsshop.com');
-    setPassword('admin123');
-    setErrorMsg('');
   };
 
   return (
@@ -111,28 +104,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({
             <p className="text-xs text-slate-400 mt-1">
               Enter your master administrative credentials to access product control & analytics.
             </p>
-          </div>
-
-          {/* Quick Demo Credentials Info Box */}
-          <div className="mb-6 bg-blue-950/40 border border-blue-800/50 rounded-2xl p-3.5 text-xs text-slate-300 flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-1.5 font-bold text-blue-300 mb-1">
-                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-                <span>Demo Admin Access:</span>
-              </div>
-              <p className="text-[11px] text-slate-400">
-                Email: <span className="font-mono text-slate-200">admin@partsshop.com</span>
-                <br />
-                Password: <span className="font-mono text-slate-200">admin123</span>
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={handleQuickFill}
-              className="shrink-0 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition-colors"
-            >
-              Auto Fill
-            </button>
           </div>
 
           {/* Error Message */}
