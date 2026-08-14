@@ -1,0 +1,22 @@
+{
+  "short_name": "PartsShop",
+  "name": "PartsShop — Technical TV Schematics",
+  "description": "Premium Marketplace for TV Schematics and Guides",
+  "icons": [
+    {
+      "src": "https://img.icons8.com/color/192/000000/electronic-circuit.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "https://img.icons8.com/color/512/000000/electronic-circuit.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#090d16",
+  "theme_color": "#090d16",
+  "display": "standalone",
+  "orientation": "portrait"
+}
